@@ -102,12 +102,19 @@ export default function CustomerReorder() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome, {customer.customer_name}!</h1>
-          {customer.company_name && (
-            <p className="text-gray-600 mt-1">{customer.company_name}</p>
-          )}
-          <p className="text-gray-500 mt-2">Click on any item below to reorder</p>
+        <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
+            alt="Orama Business Solutions"
+            className="h-14 w-auto"
+          />
+          <div className="text-right">
+            <h1 className="text-3xl font-bold text-gray-900">Welcome, {customer.customer_name}!</h1>
+            {customer.company_name && (
+              <p className="text-gray-600 mt-1">{customer.company_name}</p>
+            )}
+            <p className="text-gray-500 mt-2">Click on any item below to reorder</p>
+          </div>
         </div>
       </div>
 

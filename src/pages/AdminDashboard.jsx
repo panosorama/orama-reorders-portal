@@ -208,7 +208,11 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">Orama Solutions</h1>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
+              alt="Orama Business Solutions"
+              className="h-16 w-auto"
+            />
             <p className="text-gray-600 mt-2">Customer Reorder Portal</p>
           </div>
           <Dialog open={open} onOpenChange={(isOpen) => {
