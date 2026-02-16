@@ -33,6 +33,22 @@ Deno.serve(async (req) => {
     
     const accessToken = tokenData.access_token;
 
+    // Get company preferences to fetch next invoice number
+    const prefsResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/preferences?minorversion=65`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+    
+    const prefsData = await prefsResponse.json();
+    const nextDocNum = prefsData.Preferences?.SalesFormsPrefs?.CustomTxnNumbers === true
+      ? null
+      : undefined;
+
     // Create invoice using the pre-selected customer
     const invoiceData = {
       CustomerRef: {
@@ -49,7 +65,11 @@ Deno.serve(async (req) => {
       }],
       CustomerMemo: {
         value: `Reorder - ${product_type}`
-      }
+      },
+      SalesTermRef: {
+        value: "3"
+      },
+      ...(nextDocNum !== undefined && { DocNumber: nextDocNum })
     };
 
     const invoiceResponse = await fetch(
