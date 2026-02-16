@@ -47,14 +47,6 @@ export default function AdminDashboard() {
     }
   });
 
-  if (loadingUser || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
-  }
-
   const { data: customers = [], refetch } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list('-created_date')
@@ -67,6 +59,14 @@ export default function AdminDashboard() {
       return response.data.customers || [];
     }
   });
+
+  if (loadingUser || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   const generateToken = () => {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
