@@ -207,13 +207,13 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-white p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <div>
+          <div className="flex flex-col gap-2">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
               alt="Orama Business Solutions"
-              className="h-[168px] w-auto"
+              className="h-[168px] w-auto object-cover object-center"
             />
-            <p className="text-gray-600 mt-2">Customer Reorder Portal</p>
+            <p className="text-gray-600">Customer Reorder Portal</p>
           </div>
           <Dialog open={open} onOpenChange={(isOpen) => {
             setOpen(isOpen);
