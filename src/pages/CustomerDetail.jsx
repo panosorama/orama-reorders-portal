@@ -28,6 +28,18 @@ export default function CustomerDetail() {
   const [selectedQbCustomer, setSelectedQbCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { data: user, isLoading: loadingUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (error) {
+        base44.auth.redirectToLogin();
+        return null;
+      }
+    }
+  });
+
   const { data: customer } = useQuery({
     queryKey: ['customer', customerId],
     queryFn: async () => {
@@ -99,6 +111,14 @@ export default function CustomerDetail() {
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (c.company && c.company.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  if (loadingUser || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   if (!customer) return <div className="p-8">Loading...</div>;
 
