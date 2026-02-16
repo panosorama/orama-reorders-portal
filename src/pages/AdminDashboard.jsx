@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ExternalLink, Copy, Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Plus, ExternalLink, Copy, Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { toast } from "sonner";
@@ -18,13 +19,23 @@ export default function AdminDashboard() {
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedQBCustomer, setSelectedQBCustomer] = useState("");
+  const [qbOpen, setQbOpen] = useState(false);
+  const [createQBOpen, setCreateQBOpen] = useState(false);
+  const [newQBCustomer, setNewQBCustomer] = useState({
+    displayName: "",
+    companyName: "",
+    givenName: "",
+    familyName: "",
+    email: "",
+    phone: ""
+  });
 
   const { data: customers = [], refetch } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list('-created_date')
   });
 
-  const { data: qbCustomers = [], isLoading: loadingQB } = useQuery({
+  const { data: qbCustomers = [], isLoading: loadingQB, refetch: refetchQB } = useQuery({
     queryKey: ['qbCustomers'],
     queryFn: async () => {
       const response = await base44.functions.invoke('getQuickbooksCustomers', {});
@@ -71,6 +82,33 @@ export default function AdminDashboard() {
     toast.success("Link copied to clipboard!");
   };
 
+  const handleCreateQBCustomer = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await base44.functions.invoke('createQuickbooksCustomer', newQBCustomer);
+      
+      if (response.data.success) {
+        toast.success("QuickBooks customer created!");
+        setCreateQBOpen(false);
+        setNewQBCustomer({
+          displayName: "",
+          companyName: "",
+          givenName: "",
+          familyName: "",
+          email: "",
+          phone: ""
+        });
+        await refetchQB();
+        setSelectedQBCustomer(response.data.customer.id);
+      } else {
+        toast.error(response.data.error || "Failed to create customer");
+      }
+    } catch (error) {
+      toast.error("Failed to create QuickBooks customer");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
       <div className="max-w-6xl mx-auto">
@@ -92,25 +130,125 @@ export default function AdminDashboard() {
               </DialogHeader>
               <form onSubmit={handleCreateCustomer} className="space-y-4">
                 <div>
-                  <Label htmlFor="qbCustomer">QuickBooks Customer *</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>QuickBooks Customer *</Label>
+                    <Dialog open={createQBOpen} onOpenChange={setCreateQBOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="outline" size="sm">
+                          <Plus className="w-3 h-3 mr-1" />
+                          Create New
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Create QuickBooks Customer</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateQBCustomer} className="space-y-4">
+                          <div>
+                            <Label>Display Name *</Label>
+                            <Input
+                              value={newQBCustomer.displayName}
+                              onChange={(e) => setNewQBCustomer({...newQBCustomer, displayName: e.target.value})}
+                              required
+                              placeholder="ABC Corp"
+                            />
+                          </div>
+                          <div>
+                            <Label>Company Name</Label>
+                            <Input
+                              value={newQBCustomer.companyName}
+                              onChange={(e) => setNewQBCustomer({...newQBCustomer, companyName: e.target.value})}
+                              placeholder="ABC Corporation"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label>First Name</Label>
+                              <Input
+                                value={newQBCustomer.givenName}
+                                onChange={(e) => setNewQBCustomer({...newQBCustomer, givenName: e.target.value})}
+                                placeholder="John"
+                              />
+                            </div>
+                            <div>
+                              <Label>Last Name</Label>
+                              <Input
+                                value={newQBCustomer.familyName}
+                                onChange={(e) => setNewQBCustomer({...newQBCustomer, familyName: e.target.value})}
+                                placeholder="Doe"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input
+                              type="email"
+                              value={newQBCustomer.email}
+                              onChange={(e) => setNewQBCustomer({...newQBCustomer, email: e.target.value})}
+                              placeholder="contact@example.com"
+                            />
+                          </div>
+                          <div>
+                            <Label>Phone</Label>
+                            <Input
+                              value={newQBCustomer.phone}
+                              onChange={(e) => setNewQBCustomer({...newQBCustomer, phone: e.target.value})}
+                              placeholder="+1 555-0123"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full">Create Customer</Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                   {loadingQB ? (
                     <div className="flex items-center gap-2 p-2 text-sm text-slate-600">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Loading QuickBooks customers...
                     </div>
                   ) : (
-                    <Select value={selectedQBCustomer} onValueChange={setSelectedQBCustomer} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a QuickBooks customer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {qbCustomers.map((qbCustomer) => (
-                          <SelectItem key={qbCustomer.id} value={qbCustomer.id}>
-                            {qbCustomer.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={qbOpen} onOpenChange={setQbOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={qbOpen}
+                          className="w-full justify-between"
+                        >
+                          {selectedQBCustomer
+                            ? qbCustomers.find((c) => c.id === selectedQBCustomer)?.name
+                            : "Search QuickBooks customers..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search customers..." />
+                          <CommandList>
+                            <CommandEmpty>No customer found.</CommandEmpty>
+                            <CommandGroup>
+                              {qbCustomers.map((qbCustomer) => (
+                                <CommandItem
+                                  key={qbCustomer.id}
+                                  value={qbCustomer.name}
+                                  onSelect={() => {
+                                    setSelectedQBCustomer(qbCustomer.id);
+                                    setQbOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      selectedQBCustomer === qbCustomer.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {qbCustomer.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   )}
                 </div>
                 <div>
