@@ -247,10 +247,10 @@ export default function AdminDashboard() {
                 New Customer
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editingCustomer ? "Edit Customer" : "Create New Customer"}</DialogTitle>
-              </DialogHeader>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingCustomer ? "Edit Customer" : "Create New Customer"}</DialogTitle>
+                </DialogHeader>
               {/* ... rest of form ... */}
               <form onSubmit={editingCustomer ? handleEditCustomer : handleCreateCustomer} className="space-y-4">
                 <div>
