@@ -205,8 +205,37 @@ export default function AdminDashboard() {
               </DialogHeader>
               <form onSubmit={editingCustomer ? handleEditCustomer : handleCreateCustomer} className="space-y-4">
                 <div>
+                  <Label htmlFor="customerName">Display Name *</Label>
+                  <Input
+                    id="customerName"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    required
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="ABC Corporation"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="customer@example.com"
+                  />
+                </div>
+                <div>
                   <div className="flex items-center justify-between mb-2">
-                    <Label>QuickBooks Customer *</Label>
+                    <Label className="text-red-600">QuickBooks Customer * (Required)</Label>
                     <Dialog open={createQBOpen} onOpenChange={setCreateQBOpen}>
                       <DialogTrigger asChild>
                         <Button type="button" variant="outline" size="sm">
@@ -326,37 +355,11 @@ export default function AdminDashboard() {
                       </PopoverContent>
                     </Popover>
                   )}
+                  {!selectedQBCustomer && (
+                    <p className="text-xs text-red-600 mt-1">Please select a QuickBooks customer to continue</p>
+                  )}
                 </div>
-                <div>
-                  <Label htmlFor="customerName">Display Name *</Label>
-                  <Input
-                    id="customerName"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    required
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input
-                    id="companyName"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="ABC Corporation"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="customer@example.com"
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loadingQB}>
+                <Button type="submit" className="w-full" disabled={loadingQB || !selectedQBCustomer}>
                   {editingCustomer ? "Update Customer" : "Create Customer"}
                 </Button>
               </form>
