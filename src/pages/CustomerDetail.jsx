@@ -23,6 +23,7 @@ export default function CustomerDetail() {
   const [productType, setProductType] = useState("");
   const [specifications, setSpecifications] = useState("");
   const [pricing, setPricing] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [mockupFile, setMockupFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [qbCustomerOpen, setQbCustomerOpen] = useState(false);
@@ -94,6 +95,7 @@ export default function CustomerDetail() {
         product_type: productType,
         specifications: specifications,
         pricing: parseFloat(pricing),
+        quantity: quantity ? parseFloat(quantity) : null,
         mockup_url: mockupUrl,
         status: editingOrder?.status || "available",
         quickbooks_customer_id: selectedQbCustomer.id,
@@ -113,6 +115,7 @@ export default function CustomerDetail() {
       setProductType("");
       setSpecifications("");
       setPricing("");
+      setQuantity("");
       setMockupFile(null);
       setSelectedQbCustomer(null);
       setSearchQuery("");
@@ -129,6 +132,7 @@ export default function CustomerDetail() {
     setProductType(order.product_type);
     setSpecifications(order.specifications);
     setPricing(order.pricing.toString());
+    setQuantity(order.quantity?.toString() || "");
     const qbCustomer = qbCustomers.find(c => c.id === order.quickbooks_customer_id);
     setSelectedQbCustomer(qbCustomer);
     setOpen(true);
@@ -189,6 +193,7 @@ export default function CustomerDetail() {
               setProductType("");
               setSpecifications("");
               setPricing("");
+              setQuantity("");
               setMockupFile(null);
               setSelectedQbCustomer(null);
             }
@@ -272,17 +277,29 @@ export default function CustomerDetail() {
                     placeholder="Size: 3.5x2&#10;Material: 16pt Cardstock&#10;Finish: Matte&#10;Quantity: 500&#10;Colors: Full Color Front, Black & White Back"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="pricing">Price (USD) *</Label>
-                  <Input
-                    id="pricing"
-                    type="number"
-                    step="0.01"
-                    value={pricing}
-                    onChange={(e) => setPricing(e.target.value)}
-                    required
-                    placeholder="99.99"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="pricing">Price (USD) *</Label>
+                    <Input
+                      id="pricing"
+                      type="number"
+                      step="0.01"
+                      value={pricing}
+                      onChange={(e) => setPricing(e.target.value)}
+                      required
+                      placeholder="99.99"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="quantity">Quantity</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      placeholder="500"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="mockup">Design Mockup</Label>
