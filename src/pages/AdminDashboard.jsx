@@ -51,29 +51,33 @@ export default function AdminDashboard() {
     e.preventDefault();
     
     if (!selectedQBCustomer) {
-      toast.error("Please select a QuickBooks customer");
+      toast.error("Please select a QuickBooks customer from the dropdown");
       return;
     }
 
-    const uniqueToken = generateToken();
-    const qbCustomer = qbCustomers.find(c => c.id === selectedQBCustomer);
-    
-    await base44.entities.Customer.create({
-      customer_name: customerName,
-      company_name: companyName,
-      email: email,
-      unique_token: uniqueToken,
-      quickbooks_customer_id: selectedQBCustomer,
-      quickbooks_customer_name: qbCustomer?.name
-    });
+    try {
+      const uniqueToken = generateToken();
+      const qbCustomer = qbCustomers.find(c => c.id === selectedQBCustomer);
+      
+      await base44.entities.Customer.create({
+        customer_name: customerName,
+        company_name: companyName,
+        email: email,
+        unique_token: uniqueToken,
+        quickbooks_customer_id: selectedQBCustomer,
+        quickbooks_customer_name: qbCustomer?.name
+      });
 
-    toast.success("Customer created successfully!");
-    setOpen(false);
-    setCustomerName("");
-    setCompanyName("");
-    setEmail("");
-    setSelectedQBCustomer("");
-    refetch();
+      toast.success("Customer created successfully!");
+      setOpen(false);
+      setCustomerName("");
+      setCompanyName("");
+      setEmail("");
+      setSelectedQBCustomer("");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to create customer: " + error.message);
+    }
   };
 
   const copyLink = (token) => {
@@ -210,14 +214,15 @@ export default function AdminDashboard() {
                     <Popover open={qbOpen} onOpenChange={setQbOpen}>
                       <PopoverTrigger asChild>
                         <Button
+                          type="button"
                           variant="outline"
                           role="combobox"
                           aria-expanded={qbOpen}
-                          className="w-full justify-between"
+                          className={`w-full justify-between ${!selectedQBCustomer ? 'text-muted-foreground' : ''}`}
                         >
                           {selectedQBCustomer
                             ? qbCustomers.find((c) => c.id === selectedQBCustomer)?.name
-                            : "Search QuickBooks customers..."}
+                            : "Search and select a customer..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
