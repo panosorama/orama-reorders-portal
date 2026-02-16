@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, ExternalLink, Copy } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, ExternalLink, Copy, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { toast } from "sonner";
@@ -16,10 +17,19 @@ export default function AdminDashboard() {
   const [customerName, setCustomerName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
+  const [selectedQBCustomer, setSelectedQBCustomer] = useState("");
 
   const { data: customers = [], refetch } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list('-created_date')
+  });
+
+  const { data: qbCustomers = [], isLoading: loadingQB } = useQuery({
+    queryKey: ['qbCustomers'],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('getQuickbooksCustomers', {});
+      return response.data.customers || [];
+    }
   });
 
   const generateToken = () => {
@@ -29,13 +39,21 @@ export default function AdminDashboard() {
   const handleCreateCustomer = async (e) => {
     e.preventDefault();
     
+    if (!selectedQBCustomer) {
+      toast.error("Please select a QuickBooks customer");
+      return;
+    }
+
     const uniqueToken = generateToken();
+    const qbCustomer = qbCustomers.find(c => c.id === selectedQBCustomer);
     
     await base44.entities.Customer.create({
       customer_name: customerName,
       company_name: companyName,
       email: email,
-      unique_token: uniqueToken
+      unique_token: uniqueToken,
+      quickbooks_customer_id: selectedQBCustomer,
+      quickbooks_customer_name: qbCustomer?.name
     });
 
     toast.success("Customer created successfully!");
@@ -43,6 +61,7 @@ export default function AdminDashboard() {
     setCustomerName("");
     setCompanyName("");
     setEmail("");
+    setSelectedQBCustomer("");
     refetch();
   };
 
@@ -73,7 +92,29 @@ export default function AdminDashboard() {
               </DialogHeader>
               <form onSubmit={handleCreateCustomer} className="space-y-4">
                 <div>
-                  <Label htmlFor="customerName">Customer Name *</Label>
+                  <Label htmlFor="qbCustomer">QuickBooks Customer *</Label>
+                  {loadingQB ? (
+                    <div className="flex items-center gap-2 p-2 text-sm text-slate-600">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Loading QuickBooks customers...
+                    </div>
+                  ) : (
+                    <Select value={selectedQBCustomer} onValueChange={setSelectedQBCustomer} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a QuickBooks customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {qbCustomers.map((qbCustomer) => (
+                          <SelectItem key={qbCustomer.id} value={qbCustomer.id}>
+                            {qbCustomer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="customerName">Display Name *</Label>
                   <Input
                     id="customerName"
                     value={customerName}
@@ -101,7 +142,9 @@ export default function AdminDashboard() {
                     placeholder="customer@example.com"
                   />
                 </div>
-                <Button type="submit" className="w-full">Create Customer</Button>
+                <Button type="submit" className="w-full" disabled={loadingQB}>
+                  Create Customer
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
