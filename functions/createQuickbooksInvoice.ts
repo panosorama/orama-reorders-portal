@@ -26,13 +26,66 @@ Deno.serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
+    
+    if (!tokenResponse.ok) {
+      throw new Error(tokenData.error_description || 'Failed to get access token');
+    }
+    
     const accessToken = tokenData.access_token;
+
+    // First, search or create customer
+    const customerSearchResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=select * from Customer where DisplayName = '${(company_name || customer_name).replace(/'/g, "\\'")}'&minorversion=65`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    const customerSearchData = await customerSearchResponse.json();
+    let customerId;
+
+    if (customerSearchData.QueryResponse?.Customer?.length > 0) {
+      customerId = customerSearchData.QueryResponse.Customer[0].Id;
+    } else {
+      // Create customer
+      const customerData = {
+        DisplayName: company_name || customer_name
+      };
+
+      const createCustomerResponse = await fetch(
+        `https://quickbooks.api.intuit.com/v3/company/${realmId}/customer?minorversion=65`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(customerData)
+        }
+      );
+
+      const newCustomer = await createCustomerResponse.json();
+      
+      if (!createCustomerResponse.ok) {
+        throw new Error(newCustomer.Fault?.Error?.[0]?.Message || 'Failed to create customer');
+      }
+      
+      customerId = newCustomer.Customer.Id;
+    }
 
     // Create invoice
     const invoiceData = {
+      CustomerRef: {
+        value: customerId
+      },
       Line: [{
         Amount: pricing,
-        DetailType: "SalesItemDetail",
+        DetailType: "SalesItemLineDetail",
         Description: `${product_type}\n\nSpecifications:\n${specifications}`,
         SalesItemLineDetail: {
           Qty: 1,
@@ -40,7 +93,7 @@ Deno.serve(async (req) => {
         }
       }],
       CustomerMemo: {
-        value: `Reorder for ${company_name || customer_name}`
+        value: `Reorder - ${product_type}`
       }
     };
 
