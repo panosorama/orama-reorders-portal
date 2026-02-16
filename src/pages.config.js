@@ -50,7 +50,6 @@
 import AdminDashboard from './pages/AdminDashboard';
 import CustomerDetail from './pages/CustomerDetail';
 import CustomerReorder from './pages/CustomerReorder';
-import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -62,5 +61,4 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "AdminDashboard",
     Pages: PAGES,
-    Layout: __Layout,
 };
