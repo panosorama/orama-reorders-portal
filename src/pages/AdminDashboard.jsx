@@ -200,6 +200,10 @@ export default function AdminDashboard() {
     setOpen(true);
   };
 
+  const handleSignOut = () => {
+    base44.auth.logout();
+  };
+
   const filteredCustomers = customers.filter(customer => 
     customer.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     customer.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
