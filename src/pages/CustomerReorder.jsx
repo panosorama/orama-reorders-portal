@@ -27,7 +27,8 @@ export default function CustomerReorder() {
     queryKey: ['customer-orders', customer?.id],
     queryFn: () => base44.entities.Order.filter({ 
       customer_id: customer.id,
-      status: 'available'
+      status: 'available',
+      visible: true
     }),
     enabled: !!customer?.id
   });
