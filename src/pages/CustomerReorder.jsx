@@ -52,6 +52,10 @@ export default function CustomerReorder() {
         pricing: selectedOrder.pricing
       });
 
+      if (qbResponse.error) {
+        throw new Error(qbResponse.error);
+      }
+
       if (qbResponse.success) {
         // Create Monday.com item
         await base44.functions.invoke('createMondayItem', {
@@ -71,8 +75,11 @@ export default function CustomerReorder() {
         }, 1500);
       }
     } catch (error) {
-      toast.error("Failed to process order. Please try again.");
+      console.error("Order processing error:", error);
+      toast.error(error.message || "Failed to process order. Please try again.");
+      await base44.entities.Order.update(selectedOrder.id, { status: 'available' });
       setProcessing(false);
+      setSelectedOrder(null);
     }
   };
 
