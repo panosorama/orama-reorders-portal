@@ -411,8 +411,9 @@ export default function AdminDashboard() {
                   {editingCustomer ? "Update Customer" : "Create Customer"}
                 </Button>
               </form>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="mb-6">
