@@ -210,6 +210,20 @@ export default function CustomerReorder() {
                   {selectedOrder.specifications}
                 </p>
               </div>
+              {selectedOrder.shipping_method && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  {selectedOrder.shipping_method === "office_pickup" ? (
+                    <p className="text-blue-800 font-medium">📍 Office Pickup</p>
+                  ) : (
+                    <>
+                      <p className="text-blue-800 font-medium mb-2">📦 Blind Ship</p>
+                      {selectedOrder.ship_to_address && (
+                        <p className="text-blue-700 text-sm">Ship to: {selectedOrder.ship_to_address}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
               <div className="flex justify-between items-center py-4 border-t">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">{selectedOrder.quantity ? `Total for ${selectedOrder.quantity}` : 'Total'}</p>
