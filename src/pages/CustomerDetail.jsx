@@ -29,6 +29,8 @@ export default function CustomerDetail() {
   const [qbCustomerOpen, setQbCustomerOpen] = useState(false);
   const [selectedQbCustomer, setSelectedQbCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [shippingMethod, setShippingMethod] = useState("blind_ship");
+  const [customShipAddress, setCustomShipAddress] = useState("");
 
   const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ['currentUser'],
@@ -99,7 +101,9 @@ export default function CustomerDetail() {
         mockup_url: mockupUrl,
         status: editingOrder?.status || "available",
         quickbooks_customer_id: selectedQbCustomer.id,
-        quickbooks_customer_name: selectedQbCustomer.name
+        quickbooks_customer_name: selectedQbCustomer.name,
+        shipping_method: shippingMethod,
+        ship_to_address: shippingMethod === "blind_ship" ? (customShipAddress || customer?.ship_to_address || "") : null
       };
 
       if (editingOrder) {
@@ -119,6 +123,8 @@ export default function CustomerDetail() {
       setMockupFile(null);
       setSelectedQbCustomer(null);
       setSearchQuery("");
+      setShippingMethod("blind_ship");
+      setCustomShipAddress("");
       refetch();
     } catch (error) {
       toast.error(editingOrder ? "Failed to update order" : "Failed to add order");
@@ -133,6 +139,8 @@ export default function CustomerDetail() {
     setSpecifications(order.specifications);
     setPricing(order.pricing.toString());
     setQuantity(order.quantity?.toString() || "");
+    setShippingMethod(order.shipping_method || "blind_ship");
+    setCustomShipAddress(order.ship_to_address || "");
     const qbCustomer = qbCustomers.find(c => c.id === order.quickbooks_customer_id);
     setSelectedQbCustomer(qbCustomer);
     setOpen(true);
@@ -196,6 +204,8 @@ export default function CustomerDetail() {
               setQuantity("");
               setMockupFile(null);
               setSelectedQbCustomer(null);
+              setShippingMethod("blind_ship");
+              setCustomShipAddress("");
             }
           }}>
             <DialogTrigger asChild>
@@ -302,16 +312,53 @@ export default function CustomerDetail() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="mockup">Design Mockup</Label>
-                  <Input
-                    id="mockup"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setMockupFile(e.target.files[0])}
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Upload a preview image of the design</p>
-                </div>
-                <Button type="submit" className="w-full" disabled={uploading}>
+                   <Label htmlFor="mockup">Design Mockup</Label>
+                   <Input
+                     id="mockup"
+                     type="file"
+                     accept="image/*"
+                     onChange={(e) => setMockupFile(e.target.files[0])}
+                   />
+                   <p className="text-xs text-slate-500 mt-1">Upload a preview image of the design</p>
+                 </div>
+                 <div className="space-y-3">
+                   <Label>Shipping Method</Label>
+                   <div className="flex items-center gap-4">
+                     <label className="flex items-center gap-2 cursor-pointer">
+                       <input
+                         type="radio"
+                         value="office_pickup"
+                         checked={shippingMethod === "office_pickup"}
+                         onChange={(e) => setShippingMethod(e.target.value)}
+                       />
+                       <span className="text-sm">Office Pickup</span>
+                     </label>
+                     <label className="flex items-center gap-2 cursor-pointer">
+                       <input
+                         type="radio"
+                         value="blind_ship"
+                         checked={shippingMethod === "blind_ship"}
+                         onChange={(e) => setShippingMethod(e.target.value)}
+                       />
+                       <span className="text-sm">Blind Ship</span>
+                     </label>
+                   </div>
+                   {shippingMethod === "blind_ship" && (
+                     <div>
+                       <Label htmlFor="shipAddress">Shipping Address</Label>
+                       <Input
+                         id="shipAddress"
+                         value={customShipAddress}
+                         onChange={(e) => setCustomShipAddress(e.target.value)}
+                         placeholder={customer?.ship_to_address || "Enter shipping address"}
+                       />
+                       {customer?.ship_to_address && !customShipAddress && (
+                         <p className="text-xs text-slate-500 mt-1">Using customer's default: {customer.ship_to_address}</p>
+                       )}
+                     </div>
+                   )}
+                 </div>
+                 <Button type="submit" className="w-full" disabled={uploading}>
                   {uploading ? "Uploading..." : editingOrder ? "Update Order" : "Add Order"}
                 </Button>
               </form>
