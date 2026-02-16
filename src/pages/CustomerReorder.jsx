@@ -117,7 +117,7 @@ export default function CustomerReorder() {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
               alt="Orama Business Solutions"
-              className="h-16 w-auto"
+              className="h-[168px] w-auto object-cover object-center"
             />
           </div>
           <div>
