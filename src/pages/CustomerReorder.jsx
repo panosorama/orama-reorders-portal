@@ -61,7 +61,8 @@ export default function CustomerReorder() {
           company_name: customer.company_name,
           product_type: selectedOrder.product_type,
           specifications: selectedOrder.specifications,
-          pricing: selectedOrder.pricing
+          pricing: selectedOrder.pricing,
+          mockup_url: selectedOrder.mockup_url
         });
 
         // Send email to internal team
