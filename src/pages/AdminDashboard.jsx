@@ -35,6 +35,7 @@ export default function AdminDashboard() {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteCustomer, setDeleteCustomer] = useState(null);
   const [copiedToken, setCopiedToken] = useState(null);
+  const [shipToAddress, setShipToAddress] = useState("");
 
   const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ['currentUser'],
@@ -91,7 +92,8 @@ export default function AdminDashboard() {
         email: email,
         unique_token: uniqueToken,
         quickbooks_customer_id: selectedQBCustomer,
-        quickbooks_customer_name: qbCustomer?.name
+        quickbooks_customer_name: qbCustomer?.name,
+        ship_to_address: shipToAddress
       });
 
       toast.success("Customer created successfully!");
@@ -101,6 +103,7 @@ export default function AdminDashboard() {
       setEmail("");
       setSelectedQBCustomer("");
       setQuantity("");
+      setShipToAddress("");
       refetch();
     } catch (error) {
       toast.error("Failed to create customer: " + error.message);
@@ -163,7 +166,8 @@ export default function AdminDashboard() {
         company_name: companyName,
         email: email,
         quickbooks_customer_id: selectedQBCustomer,
-        quickbooks_customer_name: qbCustomer?.name
+        quickbooks_customer_name: qbCustomer?.name,
+        ship_to_address: shipToAddress
       });
 
       toast.success("Customer updated successfully!");
@@ -174,6 +178,7 @@ export default function AdminDashboard() {
       setEmail("");
       setSelectedQBCustomer("");
       setQuantity("");
+      setShipToAddress("");
       refetch();
     } catch (error) {
       toast.error("Failed to update customer: " + error.message);
@@ -197,6 +202,7 @@ export default function AdminDashboard() {
     setCompanyName(customer.company_name || "");
     setEmail(customer.email || "");
     setSelectedQBCustomer(customer.quickbooks_customer_id);
+    setShipToAddress(customer.ship_to_address || "");
     setOpen(true);
   };
 
@@ -239,6 +245,7 @@ export default function AdminDashboard() {
                 setCompanyName("");
                 setEmail("");
                 setSelectedQBCustomer("");
+                setShipToAddress("");
               }
             }}>
               <DialogTrigger asChild>
@@ -272,15 +279,25 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="customer@example.com"
-                  />
-                </div>
+                   <Label htmlFor="email">Email</Label>
+                   <Input
+                     id="email"
+                     type="email"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     placeholder="customer@example.com"
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="shipToAddress">Shipping Address</Label>
+                   <Input
+                     id="shipToAddress"
+                     value={shipToAddress}
+                     onChange={(e) => setShipToAddress(e.target.value)}
+                     placeholder="Enter default shipping address for blind ship orders"
+                   />
+                   <p className="text-xs text-slate-500 mt-1">Used as default for blind ship orders</p>
+                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-red-600">QuickBooks Customer * (Required)</Label>
