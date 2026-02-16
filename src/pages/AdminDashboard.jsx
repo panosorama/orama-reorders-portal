@@ -117,7 +117,8 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("QBCustomer creation error:", error);
-      toast.error("Failed to create QuickBooks customer: " + error.message);
+      const errorMessage = error.response?.data?.error || error.message || "Failed to create QuickBooks customer";
+      toast.error(errorMessage);
     }
   };
 
