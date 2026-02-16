@@ -182,7 +182,17 @@ export default function CustomerDetail() {
               <p className="text-xl text-gray-600 mt-2">{customer.company_name}</p>
             )}
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            if (!isOpen) {
+              setEditingOrder(null);
+              setProductType("");
+              setSpecifications("");
+              setPricing("");
+              setMockupFile(null);
+              setSelectedQbCustomer(null);
+            }
+          }}>
             <DialogTrigger asChild>
               <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">
                 <Plus className="w-4 h-4 mr-2" />
@@ -191,7 +201,7 @@ export default function CustomerDetail() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Add Previous Order</DialogTitle>
+                <DialogTitle>{editingOrder ? "Edit Order" : "Add Previous Order"}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleAddOrder} className="space-y-4">
                 <div>
