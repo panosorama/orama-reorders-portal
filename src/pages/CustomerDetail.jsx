@@ -390,6 +390,20 @@ export default function CustomerDetail() {
                   </span>
                 </div>
                 <p className="text-sm text-slate-500 capitalize mb-3">{order.status.replace('_', ' ')}</p>
+                {order.shipping_method && (
+                  <div className="bg-blue-50 p-2 rounded-lg mb-3 text-sm">
+                    {order.shipping_method === "office_pickup" ? (
+                      <p className="text-blue-800 font-medium">📍 Office Pickup</p>
+                    ) : (
+                      <>
+                        <p className="text-blue-800 font-medium">📦 Blind Ship</p>
+                        {order.ship_to_address && (
+                          <p className="text-blue-700 text-xs mt-1">Ship to: {order.ship_to_address}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Button
                     size="sm"
