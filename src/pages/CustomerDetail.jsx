@@ -120,14 +120,6 @@ export default function CustomerDetail() {
     (c.company && c.company.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  if (loadingUser || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
-  }
-
   if (!customer) return <div className="p-8">Loading...</div>;
 
   return (
