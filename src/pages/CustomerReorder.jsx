@@ -39,9 +39,6 @@ export default function CustomerReorder() {
   const handleApprove = async () => {
     setProcessing(true);
     try {
-      // Update order status
-      await base44.entities.Order.update(selectedOrder.id, { status: 'pending_approval' });
-
       // Create QuickBooks invoice
       const { data: qbResponse } = await base44.functions.invoke('createQuickbooksInvoice', {
         order_id: selectedOrder.id,
@@ -77,7 +74,6 @@ export default function CustomerReorder() {
     } catch (error) {
       console.error("Order processing error:", error);
       toast.error(error.message || "Failed to process order. Please try again.");
-      await base44.entities.Order.update(selectedOrder.id, { status: 'available' });
       setProcessing(false);
       setSelectedOrder(null);
     }
