@@ -232,27 +232,26 @@ export default function AdminDashboard() {
               Sign Out
             </Button>
             <Dialog open={open} onOpenChange={(isOpen) => {
-            setOpen(isOpen);
-            if (!isOpen) {
-              setEditingCustomer(null);
-              setCustomerName("");
-              setCompanyName("");
-              setEmail("");
-              setSelectedQBCustomer("");
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                New Customer
-              </Button>
-            </DialogTrigger>
+              setOpen(isOpen);
+              if (!isOpen) {
+                setEditingCustomer(null);
+                setCustomerName("");
+                setCompanyName("");
+                setEmail("");
+                setSelectedQBCustomer("");
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Customer
+                </Button>
+              </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>{editingCustomer ? "Edit Customer" : "Create New Customer"}</DialogTitle>
                 </DialogHeader>
-              {/* ... rest of form ... */}
-              <form onSubmit={editingCustomer ? handleEditCustomer : handleCreateCustomer} className="space-y-4">
+                <form onSubmit={editingCustomer ? handleEditCustomer : handleCreateCustomer} className="space-y-4">
                 <div>
                   <Label htmlFor="customerName">Display Name *</Label>
                   <Input
