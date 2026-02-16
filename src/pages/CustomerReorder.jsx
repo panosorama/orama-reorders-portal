@@ -161,7 +161,7 @@ export default function CustomerReorder() {
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-slate-200">
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Price</p>
+                      <p className="text-xs text-gray-500 mb-1">{order.quantity ? `Price for ${order.quantity}` : 'Price'}</p>
                       <span className="text-2xl font-bold text-[#EF4444]">
                         ${order.pricing.toFixed(2)}
                       </span>
