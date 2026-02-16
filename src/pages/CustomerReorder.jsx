@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CustomerReorder() {
@@ -79,10 +79,7 @@ export default function CustomerReorder() {
     }
   };
 
-  const handleDecline = async () => {
-    toast.success("Order declined");
-    setSelectedOrder(null);
-  };
+
 
   if (!token) {
     return (
@@ -192,19 +189,10 @@ export default function CustomerReorder() {
               <div className="flex justify-between items-center py-4 border-t">
                 <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
               </div>
-              <div className="flex gap-4">
-                <Button
-                  onClick={handleDecline}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={processing}
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Decline
-                </Button>
+              <div className="flex justify-center">
                 <Button
                   onClick={handleApprove}
-                  className="flex-1 bg-black hover:bg-gray-800 text-white"
+                  className="w-full max-w-xs bg-black hover:bg-gray-800 text-white"
                   disabled={processing}
                 >
                   {processing ? (
