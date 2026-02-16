@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteCustomer, setDeleteCustomer] = useState(null);
+  const [copiedToken, setCopiedToken] = useState(null);
 
   const { data: customers = [], refetch } = useQuery({
     queryKey: ['customers'],
@@ -88,6 +89,8 @@ export default function AdminDashboard() {
     const url = `${window.location.origin}${createPageUrl(`CustomerReorder?token=${token}`)}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard!");
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(null), 2000);
   };
 
   const handleCreateQBCustomer = async () => {
@@ -409,8 +412,17 @@ export default function AdminDashboard() {
                   className="w-full"
                   onClick={() => copyLink(customer.unique_token)}
                 >
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy Customer Link
+                  {copiedToken === customer.unique_token ? (
+                    <>
+                      <Check className="w-4 h-4 mr-2 text-green-600" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy Customer Link
+                    </>
+                  )}
                 </Button>
                 <div className="flex gap-2">
                   <Button
