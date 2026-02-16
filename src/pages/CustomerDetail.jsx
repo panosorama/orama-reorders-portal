@@ -19,6 +19,7 @@ export default function CustomerDetail() {
   const customerId = urlParams.get('id');
 
   const [open, setOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
   const [productType, setProductType] = useState("");
   const [specifications, setSpecifications] = useState("");
   const [pricing, setPricing] = useState("");
