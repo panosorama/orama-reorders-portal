@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { order_id, customer_name, company_name, product_type, specifications, pricing } = await req.json();
+    const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = await req.json();
 
     // Get QuickBooks credentials
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
@@ -33,55 +33,10 @@ Deno.serve(async (req) => {
     
     const accessToken = tokenData.access_token;
 
-    // First, search or create customer
-    const customerSearchResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=select * from Customer where DisplayName = '${(company_name || customer_name).replace(/'/g, "\\'")}'&minorversion=65`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
-
-    const customerSearchData = await customerSearchResponse.json();
-    let customerId;
-
-    if (customerSearchData.QueryResponse?.Customer?.length > 0) {
-      customerId = customerSearchData.QueryResponse.Customer[0].Id;
-    } else {
-      // Create customer
-      const customerData = {
-        DisplayName: company_name || customer_name
-      };
-
-      const createCustomerResponse = await fetch(
-        `https://quickbooks.api.intuit.com/v3/company/${realmId}/customer?minorversion=65`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(customerData)
-        }
-      );
-
-      const newCustomer = await createCustomerResponse.json();
-      
-      if (!createCustomerResponse.ok) {
-        throw new Error(newCustomer.Fault?.Error?.[0]?.Message || 'Failed to create customer');
-      }
-      
-      customerId = newCustomer.Customer.Id;
-    }
-
-    // Create invoice
+    // Create invoice using the pre-selected customer
     const invoiceData = {
       CustomerRef: {
-        value: customerId
+        value: quickbooks_customer_id
       },
       Line: [{
         Amount: pricing,

@@ -42,8 +42,7 @@ export default function CustomerReorder() {
       // Create QuickBooks invoice
       const { data: qbResponse } = await base44.functions.invoke('createQuickbooksInvoice', {
         order_id: selectedOrder.id,
-        customer_name: customer.customer_name,
-        company_name: customer.company_name,
+        quickbooks_customer_id: selectedOrder.quickbooks_customer_id,
         product_type: selectedOrder.product_type,
         specifications: selectedOrder.specifications,
         pricing: selectedOrder.pricing

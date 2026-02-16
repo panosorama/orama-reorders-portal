@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { toast } from "sonner";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function CustomerDetail() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -22,6 +24,9 @@ export default function CustomerDetail() {
   const [pricing, setPricing] = useState("");
   const [mockupFile, setMockupFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [qbCustomerOpen, setQbCustomerOpen] = useState(false);
+  const [selectedQbCustomer, setSelectedQbCustomer] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: customer } = useQuery({
     queryKey: ['customer', customerId],
@@ -38,8 +43,22 @@ export default function CustomerDetail() {
     enabled: !!customerId
   });
 
+  const { data: qbCustomers = [], isLoading: loadingQbCustomers } = useQuery({
+    queryKey: ['qb-customers'],
+    queryFn: async () => {
+      const { data } = await base44.functions.invoke('getQuickbooksCustomers');
+      return data.customers || [];
+    }
+  });
+
   const handleAddOrder = async (e) => {
     e.preventDefault();
+    
+    if (!selectedQbCustomer) {
+      toast.error("Please select a QuickBooks customer");
+      return;
+    }
+    
     setUploading(true);
 
     try {
@@ -55,7 +74,9 @@ export default function CustomerDetail() {
         specifications: specifications,
         pricing: parseFloat(pricing),
         mockup_url: mockupUrl,
-        status: "available"
+        status: "available",
+        quickbooks_customer_id: selectedQbCustomer.id,
+        quickbooks_customer_name: selectedQbCustomer.name
       });
 
       toast.success("Order added successfully!");
@@ -64,6 +85,8 @@ export default function CustomerDetail() {
       setSpecifications("");
       setPricing("");
       setMockupFile(null);
+      setSelectedQbCustomer(null);
+      setSearchQuery("");
       refetch();
     } catch (error) {
       toast.error("Failed to add order");
@@ -71,6 +94,11 @@ export default function CustomerDetail() {
       setUploading(false);
     }
   };
+
+  const filteredQbCustomers = qbCustomers.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.company && c.company.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   if (!customer) return <div className="p-8">Loading...</div>;
 
@@ -103,6 +131,53 @@ export default function CustomerDetail() {
                 <DialogTitle>Add Previous Order</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleAddOrder} className="space-y-4">
+                <div>
+                  <Label>QuickBooks Customer *</Label>
+                  <Popover open={qbCustomerOpen} onOpenChange={setQbCustomerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                      >
+                        {selectedQbCustomer ? selectedQbCustomer.name : "Select customer..."}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Search customers..." 
+                          value={searchQuery}
+                          onValueChange={setSearchQuery}
+                        />
+                        <CommandList>
+                          <CommandEmpty>
+                            {loadingQbCustomers ? "Loading..." : "No customers found."}
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {filteredQbCustomers.map((qbCustomer) => (
+                              <CommandItem
+                                key={qbCustomer.id}
+                                onSelect={() => {
+                                  setSelectedQbCustomer(qbCustomer);
+                                  setQbCustomerOpen(false);
+                                }}
+                              >
+                                <div>
+                                  <div className="font-medium">{qbCustomer.name}</div>
+                                  {qbCustomer.company && (
+                                    <div className="text-sm text-slate-500">{qbCustomer.company}</div>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <div>
                   <Label htmlFor="productType">Product Type *</Label>
                   <Input
