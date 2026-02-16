@@ -100,23 +100,23 @@ export default function CustomerReorder() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-8 py-6">
-          <h1 className="text-3xl font-bold text-slate-900">Welcome, {customer.customer_name}!</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome, {customer.customer_name}!</h1>
           {customer.company_name && (
-            <p className="text-slate-600 mt-1">{customer.company_name}</p>
+            <p className="text-gray-600 mt-1">{customer.company_name}</p>
           )}
-          <p className="text-slate-500 mt-2">Click on any item below to reorder</p>
+          <p className="text-gray-500 mt-2">Click on any item below to reorder</p>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {orders.map((order) => (
-            <Card key={order.id} className="hover:shadow-xl transition-all cursor-pointer group">
+            <Card key={order.id} className="hover:shadow-xl transition-all cursor-pointer group bg-white border-gray-200">
               <CardHeader>
-                <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
+                <CardTitle className="text-xl group-hover:text-[#EF4444] transition-colors">
                   {order.product_type}
                 </CardTitle>
               </CardHeader>
@@ -130,18 +130,18 @@ export default function CustomerReorder() {
                     />
                   </div>
                 )}
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <p className="text-sm text-slate-700 whitespace-pre-line line-clamp-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700 whitespace-pre-line line-clamp-4">
                     {order.specifications}
                   </p>
                 </div>
                 <div className="flex justify-between items-center pt-2">
-                  <span className="text-3xl font-bold text-blue-600">
+                  <span className="text-3xl font-bold text-[#EF4444]">
                     ${order.pricing.toFixed(2)}
                   </span>
                   <Button 
                     onClick={() => handleReorder(order)}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-[#EF4444] hover:bg-[#DC2626] text-white"
                   >
                     Reorder
                   </Button>
@@ -196,7 +196,7 @@ export default function CustomerReorder() {
                 </Button>
                 <Button
                   onClick={handleApprove}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-black hover:bg-gray-800 text-white"
                   disabled={processing}
                 >
                   {processing ? (

@@ -103,7 +103,7 @@ export default function CustomerDetail() {
   if (!customer) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <div className="min-h-screen bg-white p-8">
       <div className="max-w-6xl mx-auto">
         <Link to={createPageUrl('AdminDashboard')}>
           <Button variant="ghost" className="mb-6">
@@ -114,14 +114,14 @@ export default function CustomerDetail() {
 
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">{customer.customer_name}</h1>
+            <h1 className="text-4xl font-bold text-gray-900">{customer.customer_name}</h1>
             {customer.company_name && (
-              <p className="text-xl text-slate-600 mt-2">{customer.company_name}</p>
+              <p className="text-xl text-gray-600 mt-2">{customer.company_name}</p>
             )}
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Order
               </Button>
@@ -247,7 +247,7 @@ export default function CustomerDetail() {
                   <p className="text-sm text-slate-700 whitespace-pre-line">{order.specifications}</p>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-blue-600">${order.pricing.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-[#EF4444]">${order.pricing.toFixed(2)}</span>
                   <span className="text-sm text-slate-500 capitalize">{order.status.replace('_', ' ')}</span>
                 </div>
               </CardContent>
