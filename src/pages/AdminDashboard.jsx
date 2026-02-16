@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [selectedQBCustomer, setSelectedQBCustomer] = useState("");
   const [qbOpen, setQbOpen] = useState(false);
   const [createQBOpen, setCreateQBOpen] = useState(false);
+  const [quantity, setQuantity] = useState("");
   const [newQBCustomer, setNewQBCustomer] = useState({
     displayName: "",
     companyName: "",
@@ -99,6 +100,7 @@ export default function AdminDashboard() {
       setCompanyName("");
       setEmail("");
       setSelectedQBCustomer("");
+      setQuantity("");
       refetch();
     } catch (error) {
       toast.error("Failed to create customer: " + error.message);
@@ -171,6 +173,7 @@ export default function AdminDashboard() {
       setCompanyName("");
       setEmail("");
       setSelectedQBCustomer("");
+      setQuantity("");
       refetch();
     } catch (error) {
       toast.error("Failed to update customer: " + error.message);
@@ -235,6 +238,7 @@ export default function AdminDashboard() {
               <DialogHeader>
                 <DialogTitle>{editingCustomer ? "Edit Customer" : "Create New Customer"}</DialogTitle>
               </DialogHeader>
+              {/* ... rest of form ... */}
               <form onSubmit={editingCustomer ? handleEditCustomer : handleCreateCustomer} className="space-y-4">
                 <div>
                   <Label htmlFor="customerName">Display Name *</Label>
