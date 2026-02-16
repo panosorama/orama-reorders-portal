@@ -211,7 +211,7 @@ export default function AdminDashboard() {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
               alt="Orama Business Solutions"
-              className="h-16 w-auto"
+              className="h-24 w-auto"
             />
             <p className="text-gray-600 mt-2">Customer Reorder Portal</p>
           </div>

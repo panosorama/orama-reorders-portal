@@ -106,7 +106,7 @@ export default function CustomerReorder() {
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
             alt="Orama Business Solutions"
-            className="h-14 w-auto"
+            className="h-20 w-auto"
           />
           <div className="text-right">
             <h1 className="text-3xl font-bold text-gray-900">Welcome, {customer.customer_name}!</h1>
