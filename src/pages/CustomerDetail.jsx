@@ -83,25 +83,33 @@ export default function CustomerDetail() {
     setUploading(true);
 
     try {
-      let mockupUrl = "";
+      let mockupUrl = editingOrder?.mockup_url || "";
       if (mockupFile) {
         const { file_url } = await base44.integrations.Core.UploadFile({ file: mockupFile });
         mockupUrl = file_url;
       }
 
-      await base44.entities.Order.create({
+      const orderData = {
         customer_id: customerId,
         product_type: productType,
         specifications: specifications,
         pricing: parseFloat(pricing),
         mockup_url: mockupUrl,
-        status: "available",
+        status: editingOrder?.status || "available",
         quickbooks_customer_id: selectedQbCustomer.id,
         quickbooks_customer_name: selectedQbCustomer.name
-      });
+      };
 
-      toast.success("Order added successfully!");
+      if (editingOrder) {
+        await base44.entities.Order.update(editingOrder.id, orderData);
+        toast.success("Order updated successfully!");
+      } else {
+        await base44.entities.Order.create(orderData);
+        toast.success("Order added successfully!");
+      }
+
       setOpen(false);
+      setEditingOrder(null);
       setProductType("");
       setSpecifications("");
       setPricing("");
@@ -110,9 +118,43 @@ export default function CustomerDetail() {
       setSearchQuery("");
       refetch();
     } catch (error) {
-      toast.error("Failed to add order");
+      toast.error(editingOrder ? "Failed to update order" : "Failed to add order");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleEditOrder = (order) => {
+    setEditingOrder(order);
+    setProductType(order.product_type);
+    setSpecifications(order.specifications);
+    setPricing(order.pricing.toString());
+    const qbCustomer = qbCustomers.find(c => c.id === order.quickbooks_customer_id);
+    setSelectedQbCustomer(qbCustomer);
+    setOpen(true);
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (window.confirm("Are you sure you want to delete this order?")) {
+      try {
+        await base44.entities.Order.delete(orderId);
+        toast.success("Order deleted successfully!");
+        refetch();
+      } catch (error) {
+        toast.error("Failed to delete order");
+      }
+    }
+  };
+
+  const handleToggleVisibility = async (order) => {
+    try {
+      await base44.entities.Order.update(order.id, {
+        visible: !order.visible
+      });
+      toast.success(order.visible ? "Order hidden from portal" : "Order shown in portal");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to update visibility");
     }
   };
 
