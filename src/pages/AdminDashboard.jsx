@@ -409,11 +409,11 @@ export default function AdminDashboard() {
                 <Button type="submit" className="w-full" disabled={loadingQB || !selectedQBCustomer}>
                   {editingCustomer ? "Update Customer" : "Create Customer"}
                 </Button>
-              </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+                </form>
+                </DialogContent>
+                </Dialog>
+                </div>
+                </div>
 
         <div className="mb-6">
           <div className="relative">
