@@ -101,7 +101,6 @@ export default function AdminDashboard() {
       
       if (response.data.success) {
         toast.success("QuickBooks customer created!");
-        setCreateQBOpen(false);
         setNewQBCustomer({
           displayName: "",
           companyName: "",
@@ -112,6 +111,7 @@ export default function AdminDashboard() {
         });
         await refetchQB();
         setSelectedQBCustomer(response.data.customer.id);
+        setCreateQBOpen(false);
       } else {
         toast.error(response.data.error || "Failed to create customer");
       }
