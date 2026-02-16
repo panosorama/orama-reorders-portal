@@ -92,6 +92,12 @@ export default function AdminDashboard() {
 
   const handleCreateQBCustomer = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (!newQBCustomer.displayName) {
+      toast.error("Display Name is required");
+      return;
+    }
     
     try {
       const response = await base44.functions.invoke('createQuickbooksCustomer', newQBCustomer);
@@ -113,7 +119,8 @@ export default function AdminDashboard() {
         toast.error(response.data.error || "Failed to create customer");
       }
     } catch (error) {
-      toast.error("Failed to create QuickBooks customer");
+      console.error("QBCustomer creation error:", error);
+      toast.error("Failed to create QuickBooks customer: " + error.message);
     }
   };
 
@@ -243,11 +250,11 @@ export default function AdminDashboard() {
                           Create New
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent onPointerDownOutside={(e) => e.preventDefault()}>
                         <DialogHeader>
                           <DialogTitle>Create QuickBooks Customer</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreateQBCustomer} className="space-y-4">
+                        <form onSubmit={handleCreateQBCustomer} className="space-y-4" onClick={(e) => e.stopPropagation()}>
                           <div>
                             <Label>Display Name *</Label>
                             <Input
