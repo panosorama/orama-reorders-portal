@@ -319,9 +319,41 @@ export default function CustomerDetail() {
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <p className="text-sm text-slate-700 whitespace-pre-line">{order.specifications}</p>
                 </div>
-                <div className="flex justify-between items-center">
+                 <div className="flex justify-between items-center mb-3">
                   <span className="text-2xl font-bold text-[#EF4444]">${order.pricing.toFixed(2)}</span>
-                  <span className="text-sm text-slate-500 capitalize">{order.status.replace('_', ' ')}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${order.visible ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {order.visible ? 'Visible' : 'Hidden'}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-500 capitalize mb-3">{order.status.replace('_', ' ')}</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleEditOrder(order)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleToggleVisibility(order)}
+                  >
+                    {order.visible ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+                    {order.visible ? 'Hide' : 'Show'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => handleDeleteOrder(order.id)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Delete
+                  </Button>
                 </div>
               </CardContent>
             </Card>
