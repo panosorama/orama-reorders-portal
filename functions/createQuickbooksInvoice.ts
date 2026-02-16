@@ -1,0 +1,84 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const { order_id, customer_name, company_name, product_type, specifications, pricing } = await req.json();
+
+    // Get QuickBooks credentials
+    const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
+    const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
+    const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
+    const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
+
+    // Get new access token
+    const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`)
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken
+      })
+    });
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    // Create invoice
+    const invoiceData = {
+      Line: [{
+        Amount: pricing,
+        DetailType: "SalesItemDetail",
+        Description: `${product_type}\n\nSpecifications:\n${specifications}`,
+        SalesItemLineDetail: {
+          Qty: 1,
+          UnitPrice: pricing
+        }
+      }],
+      CustomerMemo: {
+        value: `Reorder for ${company_name || customer_name}`
+      }
+    };
+
+    const invoiceResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice?minorversion=65`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(invoiceData)
+      }
+    );
+
+    const invoice = await invoiceResponse.json();
+
+    if (!invoiceResponse.ok) {
+      throw new Error(invoice.Fault?.Error?.[0]?.Message || 'Failed to create invoice');
+    }
+
+    const invoiceId = invoice.Invoice.Id;
+    const invoiceLink = `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
+
+    // Update order with invoice ID
+    await base44.asServiceRole.entities.Order.update(order_id, {
+      quickbooks_invoice_id: invoiceId,
+      status: 'approved'
+    });
+
+    return Response.json({
+      success: true,
+      invoice_id: invoiceId,
+      invoice_link: invoiceLink
+    });
+
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
