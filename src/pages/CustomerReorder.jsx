@@ -80,10 +80,8 @@ export default function CustomerReorder() {
   };
 
   const handleDecline = async () => {
-    await base44.entities.Order.update(selectedOrder.id, { status: 'declined' });
     toast.success("Order declined");
     setSelectedOrder(null);
-    refetch();
   };
 
   if (!token) {
