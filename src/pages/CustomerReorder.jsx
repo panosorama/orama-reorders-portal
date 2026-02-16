@@ -210,7 +210,10 @@ export default function CustomerReorder() {
                 </p>
               </div>
               <div className="flex justify-between items-center py-4 border-t">
-                <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">{selectedOrder.quantity ? `Total for ${selectedOrder.quantity}` : 'Total'}</p>
+                  <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
+                </div>
               </div>
               <div className="flex justify-center">
                 <Button
