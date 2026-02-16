@@ -218,12 +218,12 @@ export default function CustomerReorder() {
                   {selectedOrder.shipping_method === "office_pickup" ? (
                     <p className="text-blue-800 font-medium">📍 Office Pickup</p>
                   ) : (
-                    <>
-                      <p className="text-blue-800 font-medium mb-2">📦 Blind Ship</p>
-                      {selectedOrder.ship_to_address && (
-                        <p className="text-blue-700 text-sm">Ship to: {selectedOrder.ship_to_address}</p>
-                      )}
-                    </>
+                   <>
+                     <p className="text-blue-800 font-medium mb-2">📦 Ship To</p>
+                     {selectedOrder.ship_to_address && (
+                       <p className="text-blue-700 text-sm">Address: {selectedOrder.ship_to_address}</p>
+                     )}
+                   </>
                   )}
                 </div>
               )}
