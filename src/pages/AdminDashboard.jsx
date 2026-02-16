@@ -222,7 +222,16 @@ export default function AdminDashboard() {
             />
             <p className="text-gray-600">Customer Reorder Portal</p>
           </div>
-          <Dialog open={open} onOpenChange={(isOpen) => {
+          <div className="flex flex-col items-end gap-3">
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
+            <Dialog open={open} onOpenChange={(isOpen) => {
             setOpen(isOpen);
             if (!isOpen) {
               setEditingCustomer(null);
