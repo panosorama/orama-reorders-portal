@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
     const customerData = await customerResponse.json();
 
     if (!customerResponse.ok) {
+      console.error('QBO Error:', JSON.stringify(customerData, null, 2));
       throw new Error(customerData.Fault?.Error?.[0]?.Message || 'Failed to fetch customers');
     }
 
