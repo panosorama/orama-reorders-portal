@@ -62,10 +62,9 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ query: addUpdateMutation })
     });
 
-    // Update order with Monday item ID
+    // Update order with Monday item ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
-      monday_item_id: itemId,
-      status: 'completed'
+      monday_item_id: itemId
     });
 
     return Response.json({
