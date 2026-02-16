@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { order_id, customer_name, company_name, product_type, specifications, pricing } = await req.json();
+    const { order_id, customer_name, company_name, product_type, specifications, pricing, mockup_url } = await req.json();
 
     const apiKey = Deno.env.get('MONDAY_API_KEY');
     const boardId = Deno.env.get('MONDAY_BOARD_ID');
@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
         create_item (
           board_id: ${boardId},
           group_id: "${groupId}",
-          item_name: "${company_name || customer_name} - ${product_type}"
+          item_name: "🪽 ${company_name || customer_name} - ${product_type}"
         ) {
           id
         }
@@ -40,7 +40,11 @@ Deno.serve(async (req) => {
     const itemId = createData.data.create_item.id;
 
     // Add update with order details
-    const updateText = `Customer: ${customer_name}${company_name ? ` (${company_name})` : ''}\nProduct: ${product_type}\nPrice: $${pricing}\n\nSpecifications:\n${specifications}`;
+    let updateText = `Customer: ${customer_name}${company_name ? ` (${company_name})` : ''}\nProduct: ${product_type}\nPrice: $${pricing}\n\nSpecifications:\n${specifications}`;
+    
+    if (mockup_url) {
+      updateText += `\n\nMockup: ${mockup_url}`;
+    }
 
     const addUpdateMutation = `
       mutation {
