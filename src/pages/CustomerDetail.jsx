@@ -295,7 +295,7 @@ export default function CustomerDetail() {
                   <p className="text-xs text-slate-500 mt-1">Upload a preview image of the design</p>
                 </div>
                 <Button type="submit" className="w-full" disabled={uploading}>
-                  {uploading ? "Uploading..." : "Add Order"}
+                  {uploading ? "Uploading..." : editingOrder ? "Update Order" : "Add Order"}
                 </Button>
               </form>
             </DialogContent>
