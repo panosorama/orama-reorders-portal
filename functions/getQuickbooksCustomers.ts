@@ -25,10 +25,12 @@ Deno.serve(async (req) => {
     const tokenData = await tokenResponse.json();
     
     if (!tokenResponse.ok) {
+      console.error('Token Error:', JSON.stringify(tokenData, null, 2));
       throw new Error(tokenData.error_description || 'Failed to get access token');
     }
     
     const accessToken = tokenData.access_token;
+    console.log('Got access token, fetching customers...');
 
     // Fetch all active customers
     const customerResponse = await fetch(
