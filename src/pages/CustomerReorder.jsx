@@ -98,62 +98,74 @@ export default function CustomerReorder() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
-            alt="Orama Business Solutions"
-            className="h-20 w-auto"
-          />
-          <div className="text-right">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome, {customer.customer_name}!</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="bg-white shadow border-b">
+        <div className="max-w-6xl mx-auto px-8 py-8">
+          <div className="flex items-start justify-between mb-8">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
+              alt="Orama Business Solutions"
+              className="h-16 w-auto"
+            />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Welcome back, {customer.customer_name}!</h1>
             {customer.company_name && (
-              <p className="text-gray-600 mt-1">{customer.company_name}</p>
+              <p className="text-lg text-gray-600 mt-2">{customer.company_name}</p>
             )}
-            <p className="text-gray-500 mt-2">Click on any item below to reorder</p>
+            <p className="text-gray-500 mt-3">Browse your previous orders and reorder in just a few clicks</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orders.map((order) => (
-            <Card key={order.id} className="hover:shadow-xl transition-all cursor-pointer group bg-white border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-xl group-hover:text-[#EF4444] transition-colors">
-                  {order.product_type}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {order.mockup_url && (
-                  <div className="relative overflow-hidden rounded-lg">
+      <div className="max-w-6xl mx-auto px-8 py-16">
+        <div>
+          <div className="mb-12">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your Previous Orders</h2>
+            <p className="text-gray-600">Select any item to place a new order</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {orders.map((order) => (
+              <Card key={order.id} className="hover:shadow-2xl transition-all duration-300 cursor-pointer group bg-white border-0 overflow-hidden">
+                <div className="relative bg-gray-100 h-64 overflow-hidden">
+                  {order.mockup_url && (
                     <img
                       src={order.mockup_url}
                       alt={order.product_type}
-                      className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl group-hover:text-[#EF4444] transition-colors duration-300">
+                    {order.product_type}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <p className="text-sm text-gray-700 whitespace-pre-line line-clamp-3 leading-relaxed">
+                      {order.specifications}
+                    </p>
                   </div>
-                )}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-700 whitespace-pre-line line-clamp-4">
-                    {order.specifications}
-                  </p>
-                </div>
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-3xl font-bold text-[#EF4444]">
-                    ${order.pricing.toFixed(2)}
-                  </span>
-                  <Button 
-                    onClick={() => handleReorder(order)}
-                    className="bg-[#EF4444] hover:bg-[#DC2626] text-white"
-                  >
-                    Reorder
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Price</p>
+                      <span className="text-2xl font-bold text-[#EF4444]">
+                        ${order.pricing.toFixed(2)}
+                      </span>
+                    </div>
+                    <Button 
+                      onClick={() => handleReorder(order)}
+                      className="bg-[#EF4444] hover:bg-[#DC2626] text-white transition-all duration-300 shadow-md hover:shadow-lg"
+                    >
+                      Reorder
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {orders.length === 0 && (
