@@ -82,8 +82,8 @@ export default function CustomerReorder() {
         toast.success("Order approved! Redirecting to payment...");
 
         // Redirect to QuickBooks invoice
-        if (qbResponse.invoice_url) {
-          window.location.href = qbResponse.invoice_url;
+        if (qbResponse.invoice_link) {
+          window.location.href = qbResponse.invoice_link;
         } else {
           console.error("No invoice URL provided:", qbResponse);
           toast.error("Could not retrieve invoice URL. Please contact support.");
