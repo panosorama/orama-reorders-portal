@@ -66,25 +66,30 @@ export default function CustomerReorder() {
         });
 
         // Send email to internal team
-         const shippingInfo = selectedOrder.shipping_method === "office_pickup" 
-           ? "Office Pickup" 
-           : `Blind Ship${selectedOrder.ship_to_address ? ` - Ship to: ${selectedOrder.ship_to_address}` : ''}`;
-         const emails = ['design@oramadigitaldesign.com', 'panos@oramadigitaldesign.com', 'joanna@uppercaseprinting.com', 'orders@oramadigitaldesign.com'];
-         const emailPromises = emails.map(email =>
-           base44.integrations.Core.SendEmail({
-             to: email,
-             subject: `Reorder Placed - ${selectedOrder.product_type}`,
-             body: `A customer has placed a reorder:\n\nCustomer: ${customer.customer_name}\nCompany: ${customer.company_name || 'N/A'}\nProduct: ${selectedOrder.product_type}\nAmount: $${selectedOrder.pricing.toFixed(2)}\nShipping: ${shippingInfo}\n\nThe invoice has been created in QuickBooks and the task has been added to Monday.com.`
-           })
-         );
+        const shippingInfo = selectedOrder.shipping_method === "office_pickup" 
+          ? "Office Pickup" 
+          : `Blind Ship${selectedOrder.ship_to_address ? ` - Ship to: ${selectedOrder.ship_to_address}` : ''}`;
+        const emails = ['design@oramadigitaldesign.com', 'panos@oramadigitaldesign.com', 'joanna@uppercaseprinting.com', 'orders@oramadigitaldesign.com'];
+        const emailPromises = emails.map(email =>
+          base44.integrations.Core.SendEmail({
+            to: email,
+            subject: `Reorder Placed - ${selectedOrder.product_type}`,
+            body: `A customer has placed a reorder:\n\nCustomer: ${customer.customer_name}\nCompany: ${customer.company_name || 'N/A'}\nProduct: ${selectedOrder.product_type}\nAmount: $${selectedOrder.pricing.toFixed(2)}\nShipping: ${shippingInfo}\n\nThe invoice has been created in QuickBooks and the task has been added to Monday.com.`
+          })
+        );
         await Promise.all(emailPromises);
 
         toast.success("Order approved! Redirecting to payment...");
-        
+
         // Redirect to QuickBooks invoice
-        setTimeout(() => {
-          window.location.href = qbResponse.invoice_link;
-        }, 1500);
+        if (qbResponse.invoice_url) {
+          window.location.href = qbResponse.invoice_url;
+        } else {
+          console.error("No invoice URL provided:", qbResponse);
+          toast.error("Could not retrieve invoice URL. Please contact support.");
+          setProcessing(false);
+          setSelectedOrder(null);
+        }
       }
     } catch (error) {
       console.error("Order processing error:", error);
