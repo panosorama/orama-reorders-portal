@@ -90,10 +90,7 @@ export default function AdminDashboard() {
     toast.success("Link copied to clipboard!");
   };
 
-  const handleCreateQBCustomer = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleCreateQBCustomer = async () => {
     if (!newQBCustomer.displayName) {
       toast.error("Display Name is required");
       return;
@@ -254,13 +251,12 @@ export default function AdminDashboard() {
                         <DialogHeader>
                           <DialogTitle>Create QuickBooks Customer</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreateQBCustomer} className="space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="space-y-4">
                           <div>
                             <Label>Display Name *</Label>
                             <Input
                               value={newQBCustomer.displayName}
                               onChange={(e) => setNewQBCustomer({...newQBCustomer, displayName: e.target.value})}
-                              required
                               placeholder="ABC Corp"
                             />
                           </div>
@@ -307,8 +303,8 @@ export default function AdminDashboard() {
                               placeholder="+1 555-0123"
                             />
                           </div>
-                          <Button type="submit" className="w-full">Create Customer</Button>
-                        </form>
+                          <Button onClick={handleCreateQBCustomer} className="w-full">Create Customer</Button>
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </div>
