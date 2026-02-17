@@ -52,7 +52,9 @@ Deno.serve(async (req) => {
       },
       SalesTermRef: {
         value: "1"
-      }
+      },
+      AllowOnlineCreditCardPayment: true,
+      AllowOnlineACHPayment: true
     };
 
     const invoiceResponse = await fetch(
