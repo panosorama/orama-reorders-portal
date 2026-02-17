@@ -57,10 +57,6 @@ Deno.serve(async (req) => {
       DueDate: new Date().toISOString().split('T')[0],
       SalesTermRef: {
         value: "1"
-      },
-      EmailStatus: "NeedToSend",
-      BillEmail: {
-        Address: ""
       }
     };
 
