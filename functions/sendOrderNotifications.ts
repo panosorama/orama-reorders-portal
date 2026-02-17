@@ -79,8 +79,9 @@ Deno.serve(async (req) => {
     }
 
     // Send emails using Resend API directly (for external recipients)
-    const emailPromises = emails.map(email =>
-      fetch('https://api.resend.com/emails', {
+    const results = [];
+    for (const email of emails) {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendKey}`,
@@ -92,10 +93,14 @@ Deno.serve(async (req) => {
           subject: `Reorder Placed - ${product_type}`,
           html: htmlBody
         })
-      }).then(res => res.json())
-    );
+      }).then(r => r.json());
+      results.push(res);
 
-    const results = await Promise.all(emailPromises);
+      // Delay 3 seconds between sends
+      if (emails.indexOf(email) < emails.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
     
     // Check for any Resend API errors
     const errors = results.filter(r => r.error);
