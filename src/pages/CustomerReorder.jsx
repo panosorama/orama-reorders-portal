@@ -237,14 +237,14 @@ export default function CustomerReorder() {
                   <p className="text-sm text-gray-600 mb-1">{selectedOrder.quantity ? `Total for ${selectedOrder.quantity}` : 'Total'}</p>
                   <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
                 </div>
-                </div>
-                </div>
-                <div className="flex justify-center pt-4 border-t">
-                <Button
+              </div>
+            </div>
+            <div className="flex justify-center pt-4 border-t">
+              <Button
                 onClick={handleApprove}
                 className="w-full max-w-xs bg-black hover:bg-gray-800 text-white"
                 disabled={processing}
-                >
+              >
                 {processing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -256,11 +256,11 @@ export default function CustomerReorder() {
                     Approve & Pay
                   </>
                 )}
-                </Button>
-                </div>
-                )}
-                </DialogContent>
-                </Dialog>
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
