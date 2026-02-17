@@ -50,7 +50,6 @@ Deno.serve(async (req) => {
       CustomerMemo: {
         value: `Reorder - ${product_type}`
       },
-      DueDate: new Date().toISOString().split('T')[0],
       SalesTermRef: {
         value: "1"
       }
