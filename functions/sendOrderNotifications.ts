@@ -3,7 +3,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
     const { customer_name, company_name, product_type, pricing, shipping_info, invoice_number, mockup_url } = await req.json();
 
     const emails = [
@@ -88,7 +87,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: user.email,
+          from: 'noreply@oramaprint.com',
           to: email,
           subject: `Reorder Placed - ${product_type}`,
           html: htmlBody
