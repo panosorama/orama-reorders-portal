@@ -4,6 +4,10 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = await req.json();
+    
+    // Get order details to access customer email
+    const order = await base44.asServiceRole.entities.Order.get(order_id);
+    const customer = await base44.asServiceRole.entities.Customer.get(order.customer_id);
 
     // Get QuickBooks credentials
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
