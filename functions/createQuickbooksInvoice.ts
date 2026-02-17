@@ -131,37 +131,35 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create a payment request via Payments API to get customer-facing link
-    const paymentRequestBody = {
-      invoiceNumber: invoiceNumber,
-      customerId: quickbooks_customer_id,
-      invoiceId: invoiceId
-    };
-
-    const paymentResponse = await fetch(
-      `https://quickbooks.api.intuit.com/quickbooks/v4/payments/payloads`,
+    // Fetch full invoice details to check for payment link
+    const invoiceDetailResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?minorversion=65`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(paymentRequestBody)
+          'Accept': 'application/json'
+        }
       }
     );
 
-    let invoiceLink = `https://invoices.intuit.com/?invoice=${invoiceId}`;
+    let invoiceLink = null;
     
-    if (paymentResponse.ok) {
-      const paymentData = await paymentResponse.json();
-      console.log("Payment Payload Response:", JSON.stringify(paymentData, null, 2));
-      if (paymentData.url) {
-        invoiceLink = paymentData.url;
+    if (invoiceDetailResponse.ok) {
+      const invoiceDetail = await invoiceDetailResponse.json();
+      // Check if invoice has a payment link property
+      if (invoiceDetail.Invoice?.paymentlinks?.[0]?.url) {
+        invoiceLink = invoiceDetail.Invoice.paymentlinks[0].url;
+        console.log("Payment link found:", invoiceLink);
+      } else if (invoiceDetail.Invoice?.paymentlinks?.[0]) {
+        invoiceLink = invoiceDetail.Invoice.paymentlinks[0];
+        console.log("Payment link object:", invoiceLink);
       }
-    } else {
-      const errorInfo = await paymentResponse.json();
-      console.log("Payment payload error:", errorInfo);
+    }
+
+    // Fallback to customer portal link if no direct payment link
+    if (!invoiceLink) {
+      invoiceLink = `https://connect.intuit.com/app/invoice/${invoiceNumber}`;
     }
 
     // Update order with invoice ID (keep status as available for reuse)
