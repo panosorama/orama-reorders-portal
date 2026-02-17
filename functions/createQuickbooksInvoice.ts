@@ -89,48 +89,7 @@ Deno.serve(async (req) => {
       invoiceId, 
       invoiceNumber, 
       salesTermRef,
-      dueDate,
-      customerEmail: customer.email
-    });
-    
-    // Send invoice to customer email to generate the payment link
-    if (customer.email) {
-      const sendResponse = await fetch(
-        `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${encodeURIComponent(customer.email)}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json'
-          }
-        }
-      );
-      
-      if (!sendResponse.ok) {
-        const sendError = await sendResponse.json();
-        console.error("Send invoice error:", sendError);
-      }
-    }
-    
-    // Get the updated invoice with InvoiceLink
-    const updatedInvoiceResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink&minorversion=65`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
-    
-    const updatedInvoice = await updatedInvoiceResponse.json();
-    const invoiceLink = updatedInvoice.Invoice?.InvoiceLink;
-    
-    console.log("Invoice link extracted:", { 
-      invoiceLink, 
-      hasLink: !!invoiceLink,
-      invoiceId,
-      fullInvoice: JSON.stringify(updatedInvoice.Invoice, null, 2)
+      dueDate
     });
 
     // Update order with invoice ID (keep status as available for reuse)
