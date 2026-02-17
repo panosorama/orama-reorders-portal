@@ -76,7 +76,10 @@ export default function CustomerReorder() {
         quickbooks_customer_id: selectedOrder.quickbooks_customer_id,
         product_type: selectedOrder.product_type,
         specifications: selectedOrder.specifications,
-        pricing: selectedOrder.pricing
+        pricing: selectedOrder.pricing,
+        quantity: selectedOrder.quantity || 1,
+        shipping_charge: selectedOrder.shipping_charge || 0,
+        is_tax_exempt: customer.is_tax_exempt || false
       });
 
       console.log("QB Response:", qbResponse);
