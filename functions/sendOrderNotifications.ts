@@ -69,17 +69,36 @@ Deno.serve(async (req) => {
 </html>
     `;
 
-    // Send emails using Base44's SendEmail integration
+    // Check for Resend API key
+    const resendKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendKey) {
+      throw new Error('RESEND_API_KEY not configured');
+    }
+
+    // Send emails using Resend API directly (for external recipients)
     const emailPromises = emails.map(email =>
-      base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `Reorder Placed - ${product_type}`,
-        body: htmlBody,
-        from_name: 'Orama Reorder Portal'
-      })
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'Orama Reorder Portal <orders@oramadigitaldesign.com>',
+          to: email,
+          subject: `Reorder Placed - ${product_type}`,
+          html: htmlBody
+        })
+      }).then(res => res.json())
     );
 
-    await Promise.all(emailPromises);
+    const results = await Promise.all(emailPromises);
+    
+    // Check for any Resend API errors
+    const errors = results.filter(r => r.error);
+    if (errors.length > 0) {
+      throw new Error(`Resend API error: ${errors[0].error?.message || 'Unknown error'}`);
+    }
 
     return Response.json({ success: true });
   } catch (error) {
