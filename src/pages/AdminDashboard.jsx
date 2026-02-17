@@ -560,7 +560,7 @@ export default function AdminDashboard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Customer</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {deleteCustomer?.customer_name}? This action cannot be undone and will remove all associated orders.
+              Are you sure you want to delete {deleteCustomer?.customer_name}? This action cannot be undone and will remove all associated reorders.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
