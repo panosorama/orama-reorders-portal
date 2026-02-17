@@ -67,19 +67,19 @@ export default function CustomerReorder() {
           mockup_url: selectedOrder.mockup_url
         });
 
-        // Send email to internal team
+        // Send email to internal team via backend
         const shippingInfo = selectedOrder.shipping_method === "office_pickup" 
           ? "Office Pickup" 
           : `Blind Ship${selectedOrder.ship_to_address ? ` - Ship to: ${selectedOrder.ship_to_address}` : ''}`;
-        const emails = ['design@oramadigitaldesign.com', 'panos@oramadigitaldesign.com', 'joanna@uppercaseprinting.com', 'orders@oramadigitaldesign.com'];
-        const emailPromises = emails.map(email =>
-          base44.integrations.Core.SendEmail({
-            to: email,
-            subject: `Reorder Placed - ${selectedOrder.product_type}`,
-            body: `A customer has placed a reorder:\n\nCustomer: ${customer.customer_name}\nCompany: ${customer.company_name || 'N/A'}\nProduct: ${selectedOrder.product_type}\nAmount: $${selectedOrder.pricing.toFixed(2)}\nShipping: ${shippingInfo}\n\nInvoice #${qbResponse.invoice_number} has been created in QuickBooks and the task has been added to Monday.com.`
-          })
-        );
-        await Promise.all(emailPromises);
+
+        await base44.functions.invoke('sendOrderNotifications', {
+          customer_name: customer.customer_name,
+          company_name: customer.company_name,
+          product_type: selectedOrder.product_type,
+          pricing: selectedOrder.pricing,
+          shipping_info: shippingInfo,
+          invoice_number: qbResponse.invoice_number
+        });
 
         toast.success("Order approved! Redirecting to payment...");
 
