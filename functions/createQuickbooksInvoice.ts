@@ -98,7 +98,23 @@ Deno.serve(async (req) => {
     
     console.log("Invoice created:", { invoiceId, invoiceNumber });
     
-    // Fetch the full invoice with the InvoiceLink
+    // Send the invoice to generate the customer payment link
+    const sendInvoiceResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?minorversion=65`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sendTo: quickbooks_customer_id
+        })
+      }
+    );
+    
+    // Fetch the invoice again to get the InvoiceLink (customer payment link)
     const fullInvoiceResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?minorversion=65`,
       {
@@ -112,7 +128,7 @@ Deno.serve(async (req) => {
     const fullInvoice = await fullInvoiceResponse.json();
     const invoiceLink = fullInvoice.Invoice?.InvoiceLink;
     
-    console.log("Full invoice response:", { 
+    console.log("Invoice link after send:", { 
       hasInvoiceLink: !!invoiceLink, 
       invoiceLink,
       invoiceId 
