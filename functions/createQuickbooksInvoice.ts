@@ -33,8 +33,34 @@ Deno.serve(async (req) => {
     
     const accessToken = tokenData.access_token;
 
-    // Create invoice and let QuickBooks auto-generate the invoice number
+    // Query the last invoice to get the highest DocNumber
+    const queryResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    let nextInvoiceNumber = '1001';
+    if (queryResponse.ok) {
+      const queryData = await queryResponse.json();
+      if (queryData.QueryResponse && queryData.QueryResponse.Invoice && queryData.QueryResponse.Invoice.length > 0) {
+        const lastDocNumber = queryData.QueryResponse.Invoice[0].DocNumber;
+        const lastNumber = parseInt(lastDocNumber, 10);
+        nextInvoiceNumber = String(lastNumber + 1);
+        console.log(`Last invoice number: ${lastDocNumber}, next: ${nextInvoiceNumber}`);
+      }
+    } else {
+      console.warn("Could not query last invoice, starting at 1001");
+    }
+
+    // Create invoice with manually incremented DocNumber
     const invoiceData = {
+      DocNumber: nextInvoiceNumber,
       CustomerRef: {
         value: quickbooks_customer_id
       },
