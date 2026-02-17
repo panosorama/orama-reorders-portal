@@ -517,7 +517,7 @@ export default function AdminDashboard() {
                  <Link to={createPageUrl(`CustomerDetail?id=${customer.id}`)} className="block">
                    <Button variant="outline" className="w-full h-8 text-xs">
                      <ExternalLink className="w-3 h-3 mr-1" />
-                     Manage Orders
+                     Manage Reorders
                    </Button>
                  </Link>
                  <Button
