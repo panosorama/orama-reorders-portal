@@ -53,7 +53,7 @@ export default function CustomerReorder() {
         throw new Error(qbResponse.error);
       }
 
-      if (qbResponse.success) {
+      if (qbResponse.success && qbResponse.invoice_link) {
         // Create Monday.com item
         await base44.functions.invoke('createMondayItem', {
           order_id: selectedOrder.id,
@@ -74,22 +74,19 @@ export default function CustomerReorder() {
           base44.integrations.Core.SendEmail({
             to: email,
             subject: `Reorder Placed - ${selectedOrder.product_type}`,
-            body: `A customer has placed a reorder:\n\nCustomer: ${customer.customer_name}\nCompany: ${customer.company_name || 'N/A'}\nProduct: ${selectedOrder.product_type}\nAmount: $${selectedOrder.pricing.toFixed(2)}\nShipping: ${shippingInfo}\n\nThe invoice has been created in QuickBooks and the task has been added to Monday.com.`
+            body: `A customer has placed a reorder:\n\nCustomer: ${customer.customer_name}\nCompany: ${customer.company_name || 'N/A'}\nProduct: ${selectedOrder.product_type}\nAmount: $${selectedOrder.pricing.toFixed(2)}\nShipping: ${shippingInfo}\n\nInvoice #${qbResponse.invoice_number} has been created in QuickBooks and the task has been added to Monday.com.`
           })
         );
         await Promise.all(emailPromises);
 
         toast.success("Order approved! Redirecting to payment...");
 
-        // Redirect to QuickBooks invoice
-        if (qbResponse.invoice_link) {
+        // Small delay to show the toast, then redirect
+        setTimeout(() => {
           window.location.href = qbResponse.invoice_link;
-        } else {
-          console.error("No invoice URL provided:", qbResponse);
-          toast.error("Could not retrieve invoice URL. Please contact support.");
-          setProcessing(false);
-          setSelectedOrder(null);
-        }
+        }, 1000);
+      } else {
+        throw new Error("Invoice link not available");
       }
     } catch (error) {
       console.error("Order processing error:", error);
