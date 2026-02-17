@@ -78,7 +78,8 @@ export default function CustomerReorder() {
           product_type: selectedOrder.product_type,
           pricing: selectedOrder.pricing,
           shipping_info: shippingInfo,
-          invoice_number: qbResponse.invoice_number
+          invoice_number: qbResponse.invoice_number,
+          mockup_url: selectedOrder.mockup_url
         });
 
         toast.success("Order approved! Redirecting to payment...");

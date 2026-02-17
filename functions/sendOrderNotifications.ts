@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { customer_name, company_name, product_type, pricing, shipping_info, invoice_number } = await req.json();
+    const { customer_name, company_name, product_type, pricing, shipping_info, invoice_number, mockup_url } = await req.json();
 
     const emails = [
       'design@oramadigitaldesign.com',
@@ -36,6 +36,9 @@ Deno.serve(async (req) => {
       <p style="margin: 10px 0 0 0; opacity: 0.9;">Invoice #${invoice_number}</p>
     </div>
     <div class="content">
+      ${mockup_url ? `<div style="margin-bottom: 20px;">
+        <img src="${mockup_url}" alt="${product_type}" style="width: 100%; border-radius: 6px; max-height: 300px; object-fit: cover;" />
+      </div>` : ''}
       <div class="order-item">
         <div class="label">Customer</div>
         <div class="value">${customer_name}</div>
