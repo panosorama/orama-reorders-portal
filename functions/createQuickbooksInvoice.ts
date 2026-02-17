@@ -4,24 +4,23 @@ const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 Deno.serve(async (req) => {
   try {
-    // 1. Input Check
+    // 1. Setup & Validation
     if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
     
     let body;
     try { body = await req.json(); } catch(e) { throw new Error("Invalid JSON"); }
     const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = body;
 
-    // 2. Load Env Vars
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
     const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
     const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
 
     if (!clientId || !clientSecret || !refreshToken || !realmId) {
-      throw new Error("Missing QB Credentials in Environment Variables");
+      throw new Error("Missing QB Environment Variables");
     }
 
-    // 3. Authenticate
+    // 2. Authenticate
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -33,7 +32,7 @@ Deno.serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
-    if (!tokenResponse.ok) throw new Error("QB Auth Failed: " + (tokenData.error_description || "Unknown"));
+    if (!tokenResponse.ok) throw new Error("Auth Failed");
     const accessToken = tokenData.access_token;
     
     const baseUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}`;
@@ -43,7 +42,7 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
-    // 4. Get Customer & Next Invoice Number
+    // 3. Get Initial Data & SET STARTING NUMBER
     const [customerRes, lastInvoiceRes] = await Promise.all([
       fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders }),
       fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders })
@@ -52,58 +51,88 @@ Deno.serve(async (req) => {
     const customerData = await customerRes.json();
     const email = customerData.Customer?.PrimaryEmailAddr?.Address || "placeholder@example.com";
 
+    // --- NEW LOGIC START ---
+    // We set 1919 as the minimum starting point
+    let currentDocNumber = 1919; 
+    
     const lastInvoiceData = await lastInvoiceRes.json();
-    let nextNum = "1001";
     if (lastInvoiceData.QueryResponse?.Invoice?.length > 0) {
-      const lastNum = lastInvoiceData.QueryResponse.Invoice[0].DocNumber;
-      const numPart = parseInt(lastNum.replace(/\D/g, ''));
-      if (!isNaN(numPart)) nextNum = (numPart + 1).toString();
+      const lastVal = lastInvoiceData.QueryResponse.Invoice[0].DocNumber;
+      const parsed = parseInt(lastVal.replace(/\D/g, ''));
+      
+      // If QB has a number like 2000, we use 2001. 
+      // If QB has 1005 (or nothing), we stick to 1919.
+      if (!isNaN(parsed) && (parsed + 1) > currentDocNumber) {
+        currentDocNumber = parsed + 1;
+      }
+    }
+    // --- NEW LOGIC END ---
+
+    // 4. Retry Loop for "Duplicate Number" Errors
+    let attempts = 0;
+    let successData = null;
+
+    while (attempts < 5) {
+      const invoicePayload = {
+        DocNumber: currentDocNumber.toString(),
+        CustomerRef: { value: quickbooks_customer_id },
+        BillEmail: { Address: email },
+        AllowOnlineCreditCardPayment: true,
+        AllowOnlineACHPayment: true,
+        Line: [{
+          Amount: pricing,
+          DetailType: "SalesItemLineDetail",
+          Description: `${product_type}\n${specifications}`,
+          SalesItemLineDetail: { Qty: 1, UnitPrice: pricing }
+        }],
+        SalesTermRef: { value: "1" }
+      };
+
+      console.log(`Attempt ${attempts + 1}: Creating Invoice #${currentDocNumber}...`);
+      
+      const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
+        method: 'POST', headers: apiHeaders, body: JSON.stringify(invoicePayload)
+      });
+
+      const createData = await createRes.json();
+
+      if (createRes.ok) {
+        successData = createData;
+        break; // Success! Exit loop.
+      } else {
+        // Check for "Duplicate Document Number" (Error Code 6140)
+        const error = createData.Fault?.Error?.[0];
+        if (error && error.code === "6140") {
+          console.warn(`Invoice #${currentDocNumber} exists. Retrying...`);
+          currentDocNumber++; // Increment and loop again
+          attempts++;
+        } else {
+          // Real error, stop.
+          throw new Error(`QB Error: ${error?.Message || JSON.stringify(createData)}`);
+        }
+      }
     }
 
-    // 5. Create Invoice
-    const invoicePayload = {
-      DocNumber: nextNum,
-      CustomerRef: { value: quickbooks_customer_id },
-      BillEmail: { Address: email },
-      AllowOnlineCreditCardPayment: true,
-      AllowOnlineACHPayment: true,
-      Line: [{
-        Amount: pricing,
-        DetailType: "SalesItemLineDetail",
-        Description: `${product_type}\n${specifications}`,
-        SalesItemLineDetail: { Qty: 1, UnitPrice: pricing }
-      }],
-      SalesTermRef: { value: "1" }
-    };
+    if (!successData) throw new Error("Failed to find a unique Invoice Number after 5 attempts.");
 
-    const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
-        method: 'POST', headers: apiHeaders, body: JSON.stringify(invoicePayload)
-    });
+    // 5. Handle Payment Link (Retry Logic)
+    const newInvoiceId = successData.Invoice.Id;
+    let finalLink = successData.Invoice.InvoiceLink;
 
-    const createData = await createRes.json();
-    if (!createRes.ok) throw new Error("Invoice Creation Failed: " + JSON.stringify(createData));
-    
-    const newInvoiceId = createData.Invoice.Id;
-    let finalLink = createData.Invoice.InvoiceLink;
-
-    // 6. Retry Logic for Link
     if (!finalLink) {
-      await wait(2000); // Wait 2 seconds
+      console.log("Waiting for link generation...");
+      await wait(2000); 
       const readRes = await fetch(`${baseUrl}/invoice/${newInvoiceId}?minorversion=65&include=invoiceLink`, { headers: apiHeaders });
       const readData = await readRes.json();
       finalLink = readData.Invoice?.InvoiceLink;
     }
 
-    // 7. FALLBACK: Generate Internal Link if Public Link fails
-    // This guarantees you have a URL to redirect to
+    // Fallback Deep Link if payments are off
     if (!finalLink) {
-      console.log("No Payment Link generated. Using Deep Link.");
-      // Check if RealmID looks like production (usually shorter) or sandbox (usually longer)
-      // Or just default to the general app URL which handles redirection
       finalLink = `https://app.qbo.intuit.com/app/invoice?txnId=${newInvoiceId}`;
     }
 
-    // 8. Update DB & Return
+    // 6. Update Base44 Database
     try {
       const base44 = createClientFromRequest(req);
       if (base44) await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
@@ -112,12 +141,11 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       invoice_id: newInvoiceId,
-      invoice_number: createData.Invoice.DocNumber,
-      invoice_link: finalLink // This will now ALWAYS have a URL
+      invoice_number: successData.Invoice.DocNumber,
+      invoice_link: finalLink
     });
 
   } catch (error) {
-    // Return 200 with success:false so frontend doesn't crash on 500
     return Response.json({ success: false, error: error.message }, { status: 200 });
   }
 });
