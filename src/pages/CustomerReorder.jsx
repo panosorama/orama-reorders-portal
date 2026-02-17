@@ -49,6 +49,8 @@ export default function CustomerReorder() {
         pricing: selectedOrder.pricing
       });
 
+      console.log("QB Response:", qbResponse);
+
       if (qbResponse.error) {
         throw new Error(qbResponse.error);
       }
