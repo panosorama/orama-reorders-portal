@@ -53,10 +53,12 @@ Deno.serve(async (req) => {
       DueDate: new Date().toISOString().split('T')[0],
       SalesTermRef: {
         value: "1"
+      },
+      EmailStatus: "NeedToSend",
+      BillEmail: {
+        Address: ""
       }
     };
-    
-    console.log("Invoice data being sent:", JSON.stringify(invoiceData, null, 2));
 
     const invoiceResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice?minorversion=65`,
