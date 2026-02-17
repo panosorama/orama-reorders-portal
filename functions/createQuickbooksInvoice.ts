@@ -89,11 +89,14 @@ Deno.serve(async (req) => {
     const invoice = await invoiceResponse.json();
 
     if (!invoiceResponse.ok) {
+      console.error("QuickBooks Error:", invoice);
       throw new Error(invoice.Fault?.Error?.[0]?.Message || 'Failed to create invoice');
     }
 
     const invoiceId = invoice.Invoice.Id;
     const invoiceNumber = invoice.Invoice.DocNumber;
+    
+    console.log("Invoice created:", { invoiceId, invoiceNumber });
     
     // Fetch the full invoice with the InvoiceLink
     const fullInvoiceResponse = await fetch(
