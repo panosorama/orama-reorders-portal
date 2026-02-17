@@ -80,16 +80,35 @@ Deno.serve(async (req) => {
     const invoiceNumber = invoice.Invoice.DocNumber;
     const salesTermRef = invoice.Invoice.SalesTermRef;
     const dueDate = invoice.Invoice.DueDate;
-    
+
     console.log("Invoice created successfully:", { 
       invoiceId, 
       invoiceNumber, 
       salesTermRef,
       dueDate
     });
-    
-    // Use the direct QuickBooks invoice URL
-    const invoiceLink = `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
+
+    // Send invoice via QuickBooks to get customer payment link
+    const sendResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${quickbooks_customer_id}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const sendResult = await sendResponse.json();
+
+    if (!sendResponse.ok) {
+      console.error("Failed to send invoice:", sendResult);
+    }
+
+    // Get the customer-facing invoice link
+    const invoiceLink = `https://app.sandbox.qbo.intuit.com/portal/invoice/${realmId}/${invoiceId}`;
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
