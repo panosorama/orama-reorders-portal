@@ -80,21 +80,13 @@ Deno.serve(async (req) => {
     const invoiceId = invoice.Invoice.Id;
     let invoiceNumber = invoice.Invoice.DocNumber || invoice.Invoice.No;
     
-    // If still no number, extract from invoice data
     if (!invoiceNumber) {
-      // Try parsing invoice details or use ID as fallback
       invoiceNumber = invoice.Invoice.Id;
     }
 
-    const salesTermRef = invoice.Invoice.SalesTermRef;
+    console.log("Invoice created successfully:", { invoiceId, invoiceNumber });
 
-    console.log("Invoice created successfully:", { 
-      invoiceId, 
-      invoiceNumber, 
-      salesTermRef
-    });
-
-    // Retrieve customer email for invoice sending
+    // Retrieve customer email
     const customerResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${realmId}/customer/${quickbooks_customer_id}?minorversion=65`,
       {
@@ -109,9 +101,32 @@ Deno.serve(async (req) => {
     const customerData = await customerResponse.json();
     const customerEmail = customerData.Customer?.PrimaryEmailAddr?.Address;
 
-    if (!customerEmail) {
-      console.warn("No email found for customer, cannot send invoice");
-    } else {
+    // If customer has email, add it to invoice to ensure InvoiceLink is generated
+    if (customerEmail) {
+      const updateResponse = await fetch(
+        `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?minorversion=65`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            Id: invoiceId,
+            SyncToken: invoice.Invoice.SyncToken,
+            BillEmail: {
+              Address: customerEmail
+            },
+            sparse: true
+          })
+        }
+      );
+
+      if (updateResponse.ok) {
+        console.log("Added email to invoice for link generation");
+      }
+
       // Send invoice via QuickBooks
       const sendResponse = await fetch(
         `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${customerEmail}`,
@@ -131,6 +146,8 @@ Deno.serve(async (req) => {
       } else {
         console.log("Invoice sent successfully to:", customerEmail);
       }
+    } else {
+      console.warn("No email found for customer");
     }
 
     // Fetch invoice with InvoiceLink included
