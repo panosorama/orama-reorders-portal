@@ -88,27 +88,47 @@ Deno.serve(async (req) => {
       dueDate
     });
 
-    // Send invoice via QuickBooks to get customer payment link
-    const sendResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${quickbooks_customer_id}`,
+    // Retrieve customer email for invoice sending
+    const customerResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/customer/${quickbooks_customer_id}?minorversion=65`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Accept': 'application/json'
         }
       }
     );
 
-    const sendResult = await sendResponse.json();
+    const customerData = await customerResponse.json();
+    const customerEmail = customerData.Customer?.PrimaryEmailAddr?.Address;
 
-    if (!sendResponse.ok) {
-      console.error("Failed to send invoice:", sendResult);
+    if (!customerEmail) {
+      console.warn("No email found for customer, cannot send invoice");
+    } else {
+      // Send invoice via QuickBooks
+      const sendResponse = await fetch(
+        `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${customerEmail}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!sendResponse.ok) {
+        const sendResult = await sendResponse.json();
+        console.error("Failed to send invoice:", sendResult);
+      } else {
+        console.log("Invoice sent successfully to:", customerEmail);
+      }
     }
 
-    // Get the customer-facing invoice link
-    const invoiceLink = `https://app.sandbox.qbo.intuit.com/portal/invoice/${realmId}/${invoiceId}`;
+    // Get the customer-facing invoice link (production URL)
+    const invoiceLink = `https://invoices.intuit.com/app/invoice?invoiceId=${invoiceId}`;
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
