@@ -102,11 +102,14 @@ Deno.serve(async (req) => {
       invoice_link: invoiceLink
     });
 
+    // Use the direct QuickBooks invoice URL
+    const invoiceLink = `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
+    
     return Response.json({
       success: true,
       invoice_id: invoiceId,
       invoice_number: invoiceNumber,
-      invoice_link: invoiceLink || `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`
+      invoice_link: invoiceLink
     });
 
   } catch (error) {
