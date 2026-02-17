@@ -46,12 +46,13 @@ Deno.serve(async (req) => {
     
     const queryData = await queryResponse.json();
     const lastInvoice = queryData.QueryResponse?.Invoice?.[0];
-    const lastDocNumber = lastInvoice?.DocNumber || "4999";
-    const nextDocNumber = (parseInt(lastDocNumber) + 1).toString();
+    let lastDocNumber = lastInvoice?.DocNumber || "4999";
+    // Ensure it's numeric
+    lastDocNumber = parseInt(lastDocNumber) || 4999;
+    const nextDocNumber = (lastDocNumber + 1).toString();
 
-    // Create invoice using the pre-selected customer
+    // Create invoice using the pre-selected customer (let QuickBooks auto-assign if preferred)
     const invoiceData = {
-      DocNumber: nextDocNumber,
       CustomerRef: {
         value: quickbooks_customer_id
       },
