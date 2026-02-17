@@ -102,8 +102,16 @@ Deno.serve(async (req) => {
 
     const invoiceId = invoice.Invoice.Id;
     const invoiceNumber = invoice.Invoice.DocNumber;
+    const salesTermRef = invoice.Invoice.SalesTermRef;
+    const dueDate = invoice.Invoice.DueDate;
     
-    console.log("Invoice created:", { invoiceId, invoiceNumber });
+    console.log("Invoice created successfully:", { 
+      invoiceId, 
+      invoiceNumber, 
+      salesTermRef,
+      dueDate,
+      fullInvoice: JSON.stringify(invoice.Invoice, null, 2)
+    });
     
     // Get the shareable customer payment link
     // This endpoint generates the link customers can use to view and pay the invoice
