@@ -14,11 +14,6 @@ export default function CustomerReorder() {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [imageZoom, setImageZoom] = useState(100);
-  const [panX, setPanX] = useState(0);
-  const [panY, setPanY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const { data: customer } = useQuery({
     queryKey: ['customer-by-token', token],
