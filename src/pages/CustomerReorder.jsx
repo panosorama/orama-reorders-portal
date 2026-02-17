@@ -14,6 +14,10 @@ export default function CustomerReorder() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [imageZoom, setImageZoom] = useState(100);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const { data: customer } = useQuery({
     queryKey: ['customer-by-token', token],
@@ -36,6 +40,29 @@ export default function CustomerReorder() {
 
   const handleReorder = (order) => {
     setSelectedOrder(order);
+    setImageZoom(100);
+    setPanX(0);
+    setPanY(0);
+  };
+
+  const handleMouseDown = (e) => {
+    if (imageZoom > 100) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging && imageZoom > 100) {
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      setPanX(newX);
+      setPanY(newY);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const handleApprove = async () => {
@@ -233,12 +260,23 @@ export default function CustomerReorder() {
                      )}
                    </div>
                    {selectedOrder.mockup_url && (
-                     <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4 overflow-auto max-h-96">
+                     <div 
+                       className="flex items-center justify-center bg-gray-50 rounded-lg p-4 overflow-hidden max-h-96 cursor-grab active:cursor-grabbing"
+                       onMouseDown={handleMouseDown}
+                       onMouseMove={handleMouseMove}
+                       onMouseUp={handleMouseUp}
+                       onMouseLeave={handleMouseUp}
+                       style={{ userSelect: 'none' }}
+                     >
                        <img
                          src={selectedOrder.mockup_url}
                          alt={selectedOrder.product_type}
-                         className="rounded-lg shadow-lg"
-                         style={{ width: `${imageZoom}%`, height: 'auto' }}
+                         className="rounded-lg shadow-lg transition-transform"
+                         style={{ 
+                           transform: `scale(${imageZoom / 100}) translate(${panX}px, ${panY}px)`,
+                           transformOrigin: 'center'
+                         }}
+                         draggable={false}
                        />
                      </div>
                    )}
