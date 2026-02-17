@@ -143,6 +143,15 @@ Deno.serve(async (req) => {
       quickbooks_invoice_id: invoiceId
     });
 
+    // Final verification logs
+    console.log("Final response data:", {
+      success: true,
+      invoice_id: invoiceId,
+      invoice_number: invoiceNumber,
+      has_invoice_link: !!invoiceLink,
+      invoice_link: invoiceLink
+    });
+
     return Response.json({
       success: true,
       invoice_id: invoiceId,
