@@ -123,9 +123,9 @@ export default function CustomerReorder() {
         <div className="max-w-6xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between mb-8">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/f4868db7a_Untitleddesign12.png" 
               alt="Orama Business Solutions"
-              className="h-20 w-auto object-contain"
+              className="h-16 w-auto object-contain"
             />
           </div>
           <div>
