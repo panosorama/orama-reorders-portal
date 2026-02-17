@@ -146,7 +146,7 @@ export default function CustomerReorder() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {orders.map((order) => (
-              <Card key={order.id} className="hover:shadow-2xl transition-all duration-300 cursor-pointer group bg-white border-0 overflow-hidden">
+              <Card key={order.id} onClick={() => handleReorder(order)} className="hover:shadow-2xl transition-all duration-300 cursor-pointer group bg-white border-0 overflow-hidden">
                 <div className="relative bg-gray-100 h-64 overflow-hidden">
                   {order.mockup_url && (
                     <img
