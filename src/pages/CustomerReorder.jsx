@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CheckCircle, Loader2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import OrderPreview from "../components/OrderPreview";
 
 export default function CustomerReorder() {
   const urlParams = new URLSearchParams(window.location.search);
