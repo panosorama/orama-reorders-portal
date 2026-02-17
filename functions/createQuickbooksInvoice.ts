@@ -51,7 +51,10 @@ Deno.serve(async (req) => {
     lastDocNumber = parseInt(lastDocNumber) || 4999;
     const nextDocNumber = (lastDocNumber + 1).toString();
 
-    // Create invoice with the calculated invoice number
+    // Log the invoice number we're about to use
+    console.log("Creating invoice with DocNumber:", nextDocNumber);
+    
+    // Create invoice with explicit invoice number and Due on Receipt terms
     const invoiceData = {
       DocNumber: nextDocNumber,
       CustomerRef: {
@@ -69,10 +72,13 @@ Deno.serve(async (req) => {
       CustomerMemo: {
         value: `Reorder - ${product_type}`
       },
+      DueDate: new Date().toISOString().split('T')[0],
       SalesTermRef: {
-        value: "3"
+        value: "1"
       }
     };
+    
+    console.log("Invoice data being sent:", JSON.stringify(invoiceData, null, 2));
 
     const invoiceResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice?minorversion=65`,
