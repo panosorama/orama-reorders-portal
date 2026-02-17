@@ -33,30 +33,8 @@ Deno.serve(async (req) => {
     
     const accessToken = tokenData.access_token;
 
-    // Get the last invoice to determine next number
-    const queryResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=SELECT * FROM Invoice ORDER BY DocNumber DESC MAXRESULTS 1&minorversion=65`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
-    
-    const queryData = await queryResponse.json();
-    const lastInvoice = queryData.QueryResponse?.Invoice?.[0];
-    let lastDocNumber = lastInvoice?.DocNumber || "4999";
-    // Ensure it's numeric
-    lastDocNumber = parseInt(lastDocNumber) || 4999;
-    const nextDocNumber = (lastDocNumber + 1).toString();
-
-    // Log the invoice number we're about to use
-    console.log("Creating invoice with DocNumber:", nextDocNumber);
-    
-    // Create invoice with explicit invoice number and Due on Receipt terms
+    // Create invoice and let QuickBooks auto-generate the invoice number
     const invoiceData = {
-      DocNumber: nextDocNumber,
       CustomerRef: {
         value: quickbooks_customer_id
       },
