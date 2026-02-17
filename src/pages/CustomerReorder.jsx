@@ -36,31 +36,6 @@ export default function CustomerReorder() {
 
   const handleReorder = (order) => {
     setSelectedOrder(order);
-    setImageZoom(100);
-    setPanX(0);
-    setPanY(0);
-  };
-
-  const handleMouseDown = (e) => {
-    if (imageZoom > 100) {
-      setIsDragging(true);
-      setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging && imageZoom > 100) {
-      const zoomFactor = imageZoom / 100;
-      const maxPan = (imageZoom - 100) * 0.5;
-      const newX = Math.max(-maxPan, Math.min(maxPan, (e.clientX - dragStart.x) / zoomFactor));
-      const newY = Math.max(-maxPan, Math.min(maxPan, (e.clientY - dragStart.y) / zoomFactor));
-      setPanX(newX);
-      setPanY(newY);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
   };
 
   const handleApprove = async () => {
