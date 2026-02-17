@@ -47,27 +47,34 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
-    // 2. DYNAMIC ITEM LOOKUP (Fixes the "Invalid Reference Id")
-    // This searches for the items by NAME instead of hardcoded ID
-    console.log("Searching for Printing and Shipping items in QB...");
-    const itemQuery = encodeURIComponent("SELECT * FROM Item WHERE Name = 'Printing' OR Name = 'Shipping'");
+    // 2. ROBUST ITEM LOOKUP
+    // We fetch ALL active services/items to find the best match manually to avoid query errors
+    const itemQuery = encodeURIComponent("SELECT * FROM Item WHERE Active = true");
     const itemRes = await fetch(`${baseUrl}/query?query=${itemQuery}&minorversion=65`, { headers: apiHeaders });
     const itemData = await itemRes.json();
     
-    const items = itemData.QueryResponse.Item || [];
-    const printingItem = items.find(i => i.Name === "Printing");
-    const shippingItem = items.find(i => i.Name === "Shipping");
+    // Safety check: Ensure QueryResponse and Item array exist
+    const allItems = itemData?.QueryResponse?.Item || [];
+    
+    // Helper to find item by name (Case Insensitive)
+    const findItem = (name) => allItems.find(i => i.Name.toLowerCase() === name.toLowerCase());
 
-    if (!printingItem) throw new Error("Could not find a Product/Service named 'Printing' in QuickBooks.");
-    if (!shippingItem && shipping_charge > 0) throw new Error("Could not find a Product/Service named 'Shipping' in QuickBooks.");
+    const printingItem = findItem("Printing");
+    const shippingItem = findItem("Shipping");
+
+    if (!printingItem) {
+      throw new Error(`Could not find 'Printing' in your QB Product/Service list. Available items: ${allItems.map(i => i.Name).join(', ')}`);
+    }
 
     const PRINTING_ID = printingItem.Id;
     const SHIPPING_ID = shippingItem?.Id;
 
     // 3. Get Customer & Next Doc Number
     const customerCheck = await fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders });
-    const customerData = await customerCheck.json();
-    const email = customerData.Customer?.PrimaryEmailAddr?.Address || "placeholder@example.com";
+    const customerResult = await customerCheck.json();
+    if (!customerCheck.ok) throw new Error("Customer not found in QB");
+    
+    const email = customerResult.Customer?.PrimaryEmailAddr?.Address || "placeholder@example.com";
 
     const lastInvoiceRes = await fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders });
     let currentDocNumber = 1919; 
@@ -78,7 +85,7 @@ Deno.serve(async (req) => {
       if (!isNaN(parsed) && (parsed + 1) > currentDocNumber) currentDocNumber = parsed + 1;
     }
 
-    // 4. Tax State Logic
+    // 4. Tax State Logic (Force NJ if not FL)
     let taxState = "NJ"; 
     const upperAddr = (ship_to_address || "").toUpperCase();
     if (upperAddr.includes(" FL ") || upperAddr.endsWith(" FL") || upperAddr.includes(", FL")) taxState = "FL";
@@ -103,7 +110,7 @@ Deno.serve(async (req) => {
         }
       ];
 
-      if (shipping_charge && shipping_charge > 0) {
+      if (shipping_charge && shipping_charge > 0 && SHIPPING_ID) {
         lines.push({
           Amount: shipping_charge,
           DetailType: "SalesItemLineDetail",
@@ -123,13 +130,14 @@ Deno.serve(async (req) => {
         BillEmail: { Address: email },
         Line: lines,
         SalesTermRef: { value: "1" },
-        TxnTaxDetail: {}, 
+        TxnTaxDetail: {}, // Triggers Automated Tax
         ShipAddr: {
           Line1: ship_to_address,
           CountrySubDivisionCode: taxState,
           PostalCode: zipCode,
           Country: "US"
-        }
+        },
+        PrivateNote: `Order: ${order_id}`
       };
 
       const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
@@ -147,7 +155,7 @@ Deno.serve(async (req) => {
           currentDocNumber++;
           attempts++;
         } else {
-          throw new Error(`QB Error: ${error.Detail} (Field: ${error.element})`);
+          throw new Error(`QB Error: ${error.Detail} (${error.element})`);
         }
       }
     }
@@ -160,7 +168,7 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, invoice_id: newInvoiceId });
 
   } catch (error) {
-    console.error("Final Catch Error:", error.message);
+    console.error("Critical Error:", error.message);
     return Response.json({ success: false, error: error.message }, { status: 200 });
   }
 });
