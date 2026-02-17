@@ -129,8 +129,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get the customer-facing invoice link (production URL)
-    const invoiceLink = `https://invoices.intuit.com/app/invoice?invoiceId=${invoiceId}`;
+    // Create payment link using the Payments API
+    const paymentLinkResponse = await fetch(
+      `https://quickbooks.api.intuit.com/quickbooks/v4/payments/payloads`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          invoiceId: invoiceId,
+          customerId: quickbooks_customer_id
+        })
+      }
+    );
+
+    let invoiceLink = `https://invoices.intuit.com/app/invoice?invoiceId=${invoiceId}`;
+    
+    if (paymentLinkResponse.ok) {
+      const paymentData = await paymentLinkResponse.json();
+      if (paymentData.href) {
+        invoiceLink = paymentData.href;
+      }
+    }
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
