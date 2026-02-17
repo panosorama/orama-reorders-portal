@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Upload, Search, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Search, Edit, Trash2, Eye, EyeOff, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ export default function CustomerDetail() {
   const [searchQuery, setSearchQuery] = useState("");
   const [shippingMethod, setShippingMethod] = useState("blind_ship");
   const [customShipAddress, setCustomShipAddress] = useState("");
+  const [shippingCharge, setShippingCharge] = useState("");
 
   const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ['currentUser'],
@@ -98,6 +99,7 @@ export default function CustomerDetail() {
         specifications: specifications,
         pricing: parseFloat(pricing),
         quantity: quantity ? parseFloat(quantity) : null,
+        shipping_charge: shippingCharge ? parseFloat(shippingCharge) : 0,
         mockup_url: mockupUrl,
         status: editingOrder?.status || "available",
         quickbooks_customer_id: selectedQbCustomer.id,
@@ -120,6 +122,7 @@ export default function CustomerDetail() {
       setSpecifications("");
       setPricing("");
       setQuantity("");
+      setShippingCharge("");
       setMockupFile(null);
       setSelectedQbCustomer(null);
       setSearchQuery("");
@@ -139,6 +142,7 @@ export default function CustomerDetail() {
     setSpecifications(order.specifications);
     setPricing(order.pricing.toString());
     setQuantity(order.quantity?.toString() || "");
+    setShippingCharge(order.shipping_charge?.toString() || "");
     setShippingMethod(order.shipping_method || "blind_ship");
     setCustomShipAddress(order.ship_to_address || "");
     const qbCustomer = qbCustomers.find(c => c.id === order.quickbooks_customer_id);
@@ -202,6 +206,7 @@ export default function CustomerDetail() {
               setSpecifications("");
               setPricing("");
               setQuantity("");
+              setShippingCharge("");
               setMockupFile(null);
               setSelectedQbCustomer(null);
               setShippingMethod("blind_ship");
@@ -287,29 +292,40 @@ export default function CustomerDetail() {
                     placeholder="Size: 3.5x2&#10;Material: 16pt Cardstock&#10;Finish: Matte&#10;Quantity: 500&#10;Colors: Full Color Front, Black & White Back"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="pricing">Price (USD) *</Label>
-                    <Input
-                      id="pricing"
-                      type="number"
-                      step="0.01"
-                      value={pricing}
-                      onChange={(e) => setPricing(e.target.value)}
-                      required
-                      placeholder="99.99"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="quantity">Quantity</Label>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                      placeholder="500"
-                    />
-                  </div>
+                <div className="grid grid-cols-3 gap-4">
+                 <div>
+                   <Label htmlFor="pricing">Price (USD) *</Label>
+                   <Input
+                     id="pricing"
+                     type="number"
+                     step="0.01"
+                     value={pricing}
+                     onChange={(e) => setPricing(e.target.value)}
+                     required
+                     placeholder="99.99"
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="quantity">Quantity</Label>
+                   <Input
+                     id="quantity"
+                     type="number"
+                     value={quantity}
+                     onChange={(e) => setQuantity(e.target.value)}
+                     placeholder="500"
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="shippingCharge">Shipping Charge (USD)</Label>
+                   <Input
+                     id="shippingCharge"
+                     type="number"
+                     step="0.01"
+                     value={shippingCharge}
+                     onChange={(e) => setShippingCharge(e.target.value)}
+                     placeholder="0.00"
+                   />
+                 </div>
                 </div>
                 <div>
                    <Label htmlFor="mockup">Design Mockup</Label>
