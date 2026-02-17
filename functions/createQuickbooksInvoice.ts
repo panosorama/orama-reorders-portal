@@ -81,6 +81,9 @@ Deno.serve(async (req) => {
     const salesTermRef = invoice.Invoice.SalesTermRef;
     const dueDate = invoice.Invoice.DueDate;
 
+    // Log the full invoice response to see what fields are available
+    console.log("Full Invoice Response:", JSON.stringify(invoice.Invoice, null, 2));
+
     console.log("Invoice created successfully:", { 
       invoiceId, 
       invoiceNumber, 
