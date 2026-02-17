@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     
     let body;
     try { body = await req.json(); } catch(e) { throw new Error("Invalid JSON"); }
-    const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = body;
+    const { order_id, quickbooks_customer_id, product_type, specifications, pricing, quantity, shipping_charge, is_tax_exempt } = body;
 
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
@@ -73,20 +73,67 @@ Deno.serve(async (req) => {
     let successData = null;
 
     while (attempts < 5) {
+      const lines = [];
+      
+      // Main product line
+      lines.push({
+        Amount: pricing,
+        DetailType: "SalesItemLineDetail",
+        Description: `${product_type}\n${specifications}`,
+        SalesItemLineDetail: { 
+          Qty: quantity || 1, 
+          UnitPrice: pricing / (quantity || 1),
+          ServiceDate: new Date().toISOString().split('T')[0],
+          ItemRef: { value: "1", name: "Printing" }
+        }
+      });
+
+      // Shipping line if applicable
+      if (shipping_charge && shipping_charge > 0) {
+        lines.push({
+          Amount: shipping_charge,
+          DetailType: "SalesItemLineDetail",
+          Description: "Shipping",
+          SalesItemLineDetail: {
+            Qty: 1,
+            UnitPrice: shipping_charge,
+            ServiceDate: new Date().toISOString().split('T')[0],
+            ItemRef: { value: "2", name: "Shipping" }
+          }
+        });
+      }
+
       const invoicePayload = {
         DocNumber: currentDocNumber.toString(),
         CustomerRef: { value: quickbooks_customer_id },
         BillEmail: { Address: email },
         AllowOnlineCreditCardPayment: true,
         AllowOnlineACHPayment: true,
-        Line: [{
-          Amount: pricing,
-          DetailType: "SalesItemLineDetail",
-          Description: `${product_type}\n${specifications}`,
-          SalesItemLineDetail: { Qty: 1, UnitPrice: pricing }
-        }],
+        Line: lines,
         SalesTermRef: { value: "1" }
       };
+
+      // Add tax if not exempt
+      if (!is_tax_exempt) {
+        invoicePayload.TxnTaxDetail = {
+          TaxLineDetail: [{
+            LineNum: lines.length,
+            PercentBased: true,
+            TaxPercent: 6.625
+          }],
+          TxnTaxLineDetail: {
+            TaxLineDetail: [{
+              PercentBased: true,
+              TaxPercent: 6.625
+            }]
+          }
+        };
+      } else {
+        // Tax exempt
+        invoicePayload.TxnTaxDetail = {
+          DefaultTaxCodeRef: { value: "2" }
+        };
+      }
 
       console.log(`Attempt ${attempts + 1}: Creating Invoice #${currentDocNumber}...`);
       
