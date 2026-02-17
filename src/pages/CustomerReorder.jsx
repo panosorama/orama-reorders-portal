@@ -252,8 +252,8 @@ export default function CustomerReorder() {
                          <Button
                            size="sm"
                            variant="ghost"
-                           onClick={() => setImageZoom(Math.min(300, imageZoom + 25))}
-                           disabled={imageZoom === 300}
+                           onClick={() => setImageZoom(Math.min(500, imageZoom + 25))}
+                           disabled={imageZoom === 500}
                          >
                            <ZoomIn className="w-4 h-4" />
                          </Button>
