@@ -147,16 +147,16 @@ export default function CustomerReorder() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {orders.map((order) => (
               <Card key={order.id} onClick={() => handleReorder(order)} className="hover:shadow-2xl transition-all duration-300 cursor-pointer group bg-white border-0 overflow-hidden">
-                <div className="relative bg-gray-100 h-64 overflow-hidden">
-                  {order.mockup_url && (
-                    <img
-                      src={order.mockup_url}
-                      alt={order.product_type}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
+                <div className="relative bg-gray-100 h-64 overflow-hidden flex items-center justify-center">
+                   {order.mockup_url && (
+                     <img
+                       src={order.mockup_url}
+                       alt={order.product_type}
+                       className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                     />
+                   )}
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                 </div>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl group-hover:text-[#EF4444] transition-colors duration-300">
                     {order.product_type}
@@ -209,12 +209,14 @@ export default function CustomerReorder() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">{selectedOrder.product_type}</h3>
                   {selectedOrder.mockup_url && (
-                    <img
-                      src={selectedOrder.mockup_url}
-                      alt={selectedOrder.product_type}
-                      className="w-full rounded-lg shadow-lg"
-                    />
-                  )}
+                     <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4">
+                       <img
+                         src={selectedOrder.mockup_url}
+                         alt={selectedOrder.product_type}
+                         className="max-w-full max-h-96 object-contain rounded-lg shadow-lg"
+                       />
+                     </div>
+                   )}
                 </div>
                 <div className="bg-slate-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Specifications:</h4>
