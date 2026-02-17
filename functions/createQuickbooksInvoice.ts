@@ -133,39 +133,31 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create secure payment link via QuickBooks Payments API
-    let invoiceLink = null;
-    
-    try {
-      const linkResponse = await fetch(
-        `https://quickbooks.api.intuit.com/quickbooks/v4/payments/links`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            entityId: invoiceId,
-            entityType: "invoice",
-            customerId: quickbooks_customer_id
-          })
-        }
-      );
-
-      if (linkResponse.ok) {
-        const linkData = await linkResponse.json();
-        invoiceLink = linkData.url || linkData.link || null;
-        console.log("Payment link created:", invoiceLink);
+    // Fetch invoice with InvoiceLink included
+    const invoiceWithLinkResponse = await fetch(
+    `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink&minorversion=65`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json'
       }
-    } catch (e) {
-      console.log("Could not generate secure link:", e.message);
+    }
+    );
+
+    let invoiceLink = null;
+    if (invoiceWithLinkResponse.ok) {
+    const invoiceWithLink = await invoiceWithLinkResponse.json();
+    invoiceLink = invoiceWithLink.Invoice?.InvoiceLink;
+    console.log("InvoiceLink retrieved:", invoiceLink);
+    } else {
+    const errorData = await invoiceWithLinkResponse.json();
+    console.error("Failed to retrieve InvoiceLink:", errorData);
     }
 
-    // Fallback to CommerceNetwork portal link if API fails
+    // Fallback if link is not available
     if (!invoiceLink) {
-      invoiceLink = `https://connect.intuit.com/portal/app/CommerceNetwork/`;
+    invoiceLink = `https://connect.intuit.com/portal/app/CommerceNetwork/`;
     }
 
     // Update order with invoice ID (keep status as available for reuse)
