@@ -106,6 +106,7 @@ export default function AdminDashboard() {
       setSelectedQBCustomer("");
       setQuantity("");
       setShipToAddress("");
+      setIsTaxExempt(false);
       refetch();
     } catch (error) {
       toast.error("Failed to create customer: " + error.message);
@@ -188,6 +189,7 @@ export default function AdminDashboard() {
       setSelectedQBCustomer("");
       setQuantity("");
       setShipToAddress("");
+      setIsTaxExempt(false);
       refetch();
     } catch (error) {
       toast.error("Failed to update customer: " + error.message);
