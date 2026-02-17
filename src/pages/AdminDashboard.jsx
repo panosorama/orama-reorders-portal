@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, ExternalLink, Copy, Loader2, Check, ChevronsUpDown, Trash2, Edit, Search, LogOut } from "lucide-react";
+import { Plus, ExternalLink, Copy, Loader2, Check, ChevronsUpDown, Trash2, Edit, Search, LogOut, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ export default function AdminDashboard() {
   const [deleteCustomer, setDeleteCustomer] = useState(null);
   const [copiedToken, setCopiedToken] = useState(null);
   const [shipToAddress, setShipToAddress] = useState("");
+  const [isTaxExempt, setIsTaxExempt] = useState(false);
 
   const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ['currentUser'],
@@ -93,7 +94,8 @@ export default function AdminDashboard() {
         unique_token: uniqueToken,
         quickbooks_customer_id: selectedQBCustomer,
         quickbooks_customer_name: qbCustomer?.name,
-        ship_to_address: shipToAddress
+        ship_to_address: shipToAddress,
+        is_tax_exempt: isTaxExempt
       });
 
       toast.success("Customer created successfully!");
@@ -173,7 +175,8 @@ export default function AdminDashboard() {
         email: email,
         quickbooks_customer_id: selectedQBCustomer,
         quickbooks_customer_name: qbCustomer?.name,
-        ship_to_address: shipToAddress
+        ship_to_address: shipToAddress,
+        is_tax_exempt: isTaxExempt
       });
 
       toast.success("Customer updated successfully!");
@@ -209,6 +212,7 @@ export default function AdminDashboard() {
     setEmail(customer.email || "");
     setSelectedQBCustomer(customer.quickbooks_customer_id);
     setShipToAddress(customer.ship_to_address || "");
+    setIsTaxExempt(customer.is_tax_exempt || false);
     setOpen(true);
   };
 
@@ -252,6 +256,7 @@ export default function AdminDashboard() {
                 setEmail("");
                 setSelectedQBCustomer("");
                 setShipToAddress("");
+                setIsTaxExempt(false);
               }
             }}>
               <DialogTrigger asChild>
@@ -303,6 +308,16 @@ export default function AdminDashboard() {
                      placeholder="Enter default shipping address for blind ship orders"
                    />
                    <p className="text-xs text-slate-500 mt-1">Used as default for blind ship orders</p>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <input
+                     type="checkbox"
+                     id="taxExempt"
+                     checked={isTaxExempt}
+                     onChange={(e) => setIsTaxExempt(e.target.checked)}
+                     className="w-4 h-4 rounded"
+                   />
+                   <Label htmlFor="taxExempt" className="cursor-pointer">Tax Exempt</Label>
                  </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
