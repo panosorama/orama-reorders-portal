@@ -196,12 +196,12 @@ export default function CustomerReorder() {
       </div>
 
       <Dialog open={!!selectedOrder} onOpenChange={() => !processing && setSelectedOrder(null)}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-2xl">Review Your Order</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-6">
+            <div className="space-y-6 overflow-y-auto flex-1">
               <div>
                 <h3 className="font-semibold text-lg mb-3">{selectedOrder.product_type}</h3>
                 {selectedOrder.mockup_url && (
