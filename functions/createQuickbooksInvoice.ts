@@ -129,31 +129,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create payment request link using Payments API
-    const paymentLinkResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoices/${invoiceId}/paymentlinks`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    let invoiceLink = `https://invoices.intuit.com/app/invoice?invoiceId=${invoiceId}&filter=OPEN&paidStatus=UNPAID`;
-    
-    if (paymentLinkResponse.ok) {
-      const paymentData = await paymentLinkResponse.json();
-      console.log("Payment Link Response:", paymentData);
-      if (paymentData.Invoice?.paymentlinks?.[0]?.paymentlink) {
-        invoiceLink = paymentData.Invoice.paymentlinks[0].paymentlink;
-      }
-    } else {
-      const errorData = await paymentLinkResponse.json();
-      console.log("Payment link creation failed:", errorData);
-    }
+    // Generate customer payment portal link using invoice number
+    const invoiceLink = `https://qbo.intuit.com/app/invoice/${invoiceNumber}?redirected=true`;
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
