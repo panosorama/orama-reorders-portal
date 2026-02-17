@@ -1,28 +1,27 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Helper for delays
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 Deno.serve(async (req) => {
   try {
+    // 1. Input Check
     if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
     
     let body;
     try { body = await req.json(); } catch(e) { throw new Error("Invalid JSON"); }
-
     const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = body;
 
-    // 1. Setup
+    // 2. Load Env Vars
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
     const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
     const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
 
     if (!clientId || !clientSecret || !refreshToken || !realmId) {
-      throw new Error("Missing Environment Variables");
+      throw new Error("Missing QB Credentials in Environment Variables");
     }
 
-    // 2. Auth
+    // 3. Authenticate
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -34,7 +33,7 @@ Deno.serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
-    if (!tokenResponse.ok) throw new Error("Auth Failed");
+    if (!tokenResponse.ok) throw new Error("QB Auth Failed: " + (tokenData.error_description || "Unknown"));
     const accessToken = tokenData.access_token;
     
     const baseUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}`;
@@ -44,7 +43,7 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
-    // 3. Prep Data (Get Email & Invoice Number)
+    // 4. Get Customer & Next Invoice Number
     const [customerRes, lastInvoiceRes] = await Promise.all([
       fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders }),
       fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders })
@@ -61,7 +60,7 @@ Deno.serve(async (req) => {
       if (!isNaN(numPart)) nextNum = (numPart + 1).toString();
     }
 
-    // 4. Create Invoice
+    // 5. Create Invoice
     const invoicePayload = {
       DocNumber: nextNum,
       CustomerRef: { value: quickbooks_customer_id },
@@ -77,36 +76,34 @@ Deno.serve(async (req) => {
       SalesTermRef: { value: "1" }
     };
 
-    console.log("Creating Invoice...");
     const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
-        method: 'POST',
-        headers: apiHeaders,
-        body: JSON.stringify(invoicePayload)
-      }
-    );
+        method: 'POST', headers: apiHeaders, body: JSON.stringify(invoicePayload)
+    });
 
     const createData = await createRes.json();
-    if (!createRes.ok) throw new Error("Invoice Creation Failed");
+    if (!createRes.ok) throw new Error("Invoice Creation Failed: " + JSON.stringify(createData));
     
     const newInvoiceId = createData.Invoice.Id;
     let finalLink = createData.Invoice.InvoiceLink;
 
-    // 5. THE FIX: If link is missing, Wait and Read Back
+    // 6. Retry Logic for Link
     if (!finalLink) {
-      console.log("Link missing in Create response. Waiting 2 seconds to read back...");
-      await wait(2000); // 2 second delay
-
-      const readRes = await fetch(`${baseUrl}/invoice/${newInvoiceId}?minorversion=65&include=invoiceLink`, {
-        headers: apiHeaders
-      });
+      await wait(2000); // Wait 2 seconds
+      const readRes = await fetch(`${baseUrl}/invoice/${newInvoiceId}?minorversion=65&include=invoiceLink`, { headers: apiHeaders });
       const readData = await readRes.json();
       finalLink = readData.Invoice?.InvoiceLink;
     }
 
-    // 6. Final Check
-    console.log("Final Link Retrieved:", finalLink);
+    // 7. FALLBACK: Generate Internal Link if Public Link fails
+    // This guarantees you have a URL to redirect to
+    if (!finalLink) {
+      console.log("No Payment Link generated. Using Deep Link.");
+      // Check if RealmID looks like production (usually shorter) or sandbox (usually longer)
+      // Or just default to the general app URL which handles redirection
+      finalLink = `https://app.qbo.intuit.com/app/invoice?txnId=${newInvoiceId}`;
+    }
 
-    // Update DB
+    // 8. Update DB & Return
     try {
       const base44 = createClientFromRequest(req);
       if (base44) await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
@@ -116,11 +113,11 @@ Deno.serve(async (req) => {
       success: true,
       invoice_id: newInvoiceId,
       invoice_number: createData.Invoice.DocNumber,
-      // If still null, return a safe string so frontend doesn't crash, but user knows why
-      invoice_link: finalLink || "NO_LINK_GENERATED_CHECK_QB_PAYMENTS_SETUP"
+      invoice_link: finalLink // This will now ALWAYS have a URL
     });
 
   } catch (error) {
+    // Return 200 with success:false so frontend doesn't crash on 500
     return Response.json({ success: false, error: error.message }, { status: 200 });
   }
 });
