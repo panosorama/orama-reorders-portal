@@ -120,12 +120,12 @@ export default function CustomerReorder() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="bg-white shadow border-b">
-        <div className="max-w-6xl mx-auto px-8 py-8">
-          <div className="flex items-start justify-between mb-8">
+        <div className="max-w-6xl mx-auto px-8 py-6">
+          <div className="flex items-center justify-between mb-8">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/9e221aae1_OramaSolutionsLogo2.png" 
               alt="Orama Business Solutions"
-              className="h-[168px] w-auto object-cover object-center"
+              className="h-20 w-auto object-contain"
             />
           </div>
           <div>
