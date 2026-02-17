@@ -113,8 +113,24 @@ Deno.serve(async (req) => {
       fullInvoice: JSON.stringify(invoice.Invoice, null, 2)
     });
     
+    // Send the invoice to generate the payment link
+    const sendResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${quickbooks_customer_id}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+    
+    if (!sendResponse.ok) {
+      const sendError = await sendResponse.json();
+      console.error("Send invoice error:", sendError);
+    }
+    
     // Get the shareable customer payment link
-    // This endpoint generates the link customers can use to view and pay the invoice
     const shareResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink`,
       {
@@ -127,7 +143,7 @@ Deno.serve(async (req) => {
     );
     
     const shareData = await shareResponse.json();
-    console.log("Share data:", JSON.stringify(shareData, null, 2));
+    console.log("Share data after send:", JSON.stringify(shareData, null, 2));
     
     // Extract the InvoiceLink which is the customer payment URL
     const invoiceLink = shareData.Invoice?.InvoiceLink;
