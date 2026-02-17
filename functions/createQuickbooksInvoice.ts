@@ -5,13 +5,14 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = await req.json();
 
-    // Get QuickBooks credentials
+    // 1. Setup Credentials
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
     const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
     const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
+    const baseUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}`;
 
-    // Get new access token
+    // 2. Get Access Token
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -26,44 +27,48 @@ Deno.serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
-    
-    if (!tokenResponse.ok) {
-      throw new Error(tokenData.error_description || 'Failed to get access token');
-    }
-    
+    if (!tokenResponse.ok) throw new Error(tokenData.error_description || 'Failed to get access token');
     const accessToken = tokenData.access_token;
+    
+    const apiHeaders = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    };
 
-    // Query the last invoice to get the highest DocNumber
-    const queryResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
+    // 3. PRE-WORK: Fetch Customer Email AND Last Invoice Number (in parallel for speed)
+    const [customerResponse, lastInvoiceResponse] = await Promise.all([
+      // A. Get Customer to find their Email
+      fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders }),
+      // B. Query Last Invoice to calculate next DocNumber manually
+      fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders })
+    ]);
 
-    let nextInvoiceNumber = '1001';
-    if (queryResponse.ok) {
-      const queryData = await queryResponse.json();
-      if (queryData.QueryResponse && queryData.QueryResponse.Invoice && queryData.QueryResponse.Invoice.length > 0) {
-        const lastDocNumber = queryData.QueryResponse.Invoice[0].DocNumber;
-        const lastNumber = parseInt(lastDocNumber, 10);
-        nextInvoiceNumber = String(lastNumber + 1);
-        console.log(`Last invoice number: ${lastDocNumber}, next: ${nextInvoiceNumber}`);
+    // Process Customer Email
+    const customerData = await customerResponse.json();
+    // Default to a placeholder if missing, or the link WON'T generate.
+    const customerEmail = customerData.Customer?.PrimaryEmailAddr?.Address || "noreply@placeholder.com";
+
+    // Process Invoice Number
+    const lastInvoiceData = await lastInvoiceResponse.json();
+    let nextDocNumber = "1001"; // Default start
+    if (lastInvoiceData.QueryResponse?.Invoice?.length > 0) {
+      const lastDocNum = lastInvoiceData.QueryResponse.Invoice[0].DocNumber;
+      // Extract number and increment (handle potential non-numeric prefixes if needed)
+      const numericPart = parseInt(lastDocNum.replace(/\D/g, '')); 
+      if (!isNaN(numericPart)) {
+        nextDocNumber = (numericPart + 1).toString();
       }
-    } else {
-      console.warn("Could not query last invoice, starting at 1001");
     }
 
-    // Create invoice with manually incremented DocNumber
+    // 4. Create Invoice (With Email, Payment Flags, AND Explicit DocNumber)
     const invoiceData = {
-      DocNumber: nextInvoiceNumber,
-      CustomerRef: {
-        value: quickbooks_customer_id
-      },
+      DocNumber: nextDocNumber, // Explicitly set the number
+      CustomerRef: { value: quickbooks_customer_id },
+      BillEmail: { Address: customerEmail }, // REQUIRED for Link Generation
+      // REQUIRED: These flags trigger the payment link creation
+      AllowOnlineCreditCardPayment: true, 
+      AllowOnlineACHPayment: true,
       Line: [{
         Amount: pricing,
         DetailType: "SalesItemLineDetail",
@@ -73,145 +78,48 @@ Deno.serve(async (req) => {
           UnitPrice: pricing
         }
       }],
-      CustomerMemo: {
-        value: `Reorder - ${product_type}`
-      },
-      SalesTermRef: {
-        value: "1"
-      },
-      AllowOnlineCreditCardPayment: true,
-      AllowOnlineACHPayment: true
+      CustomerMemo: { value: `Reorder - ${product_type}` },
+      SalesTermRef: { value: "1" }
     };
 
-    const invoiceResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice?minorversion=65`,
+    // Note: We use ?include=invoiceLink to ensure it returns in the response
+    const createInvoiceRes = await fetch(
+      `${baseUrl}/invoice?minorversion=65&include=invoiceLink`, 
       {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
+        headers: apiHeaders,
         body: JSON.stringify(invoiceData)
       }
     );
 
-    const invoice = await invoiceResponse.json();
+    const invoiceResult = await createInvoiceRes.json();
 
-    if (!invoiceResponse.ok) {
-      console.error("QuickBooks Error:", invoice);
-      throw new Error(invoice.Fault?.Error?.[0]?.Message || 'Failed to create invoice');
+    if (!createInvoiceRes.ok) {
+      console.error("QB Error:", invoiceResult);
+      throw new Error(invoiceResult.Fault?.Error?.[0]?.Message || 'Failed to create invoice');
     }
 
-    const invoiceId = invoice.Invoice.Id;
-    const invoiceNumber = invoice.Invoice.DocNumber;
+    // 5. Extract Data
+    const createdInvoice = invoiceResult.Invoice;
+    const finalInvoiceId = createdInvoice.Id;
+    const finalInvoiceNumber = createdInvoice.DocNumber;
+    // The link should now be directly in the response because of our flags + query param
+    const finalInvoiceLink = createdInvoice.InvoiceLink || `https://connect.intuit.com/portal/app/CommerceNetwork/view/scs-v1-missing`;
 
-    console.log("Invoice created successfully:", { invoiceId, invoiceNumber });
-
-    // Retrieve customer email
-    const customerResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/customer/${quickbooks_customer_id}?minorversion=65`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
-
-    const customerData = await customerResponse.json();
-    const customerEmail = customerData.Customer?.PrimaryEmailAddr?.Address;
-
-    // If customer has email, add it to invoice to ensure InvoiceLink is generated
-    if (customerEmail) {
-      const updateResponse = await fetch(
-        `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?minorversion=65`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            Id: invoiceId,
-            SyncToken: invoice.Invoice.SyncToken,
-            BillEmail: {
-              Address: customerEmail
-            },
-            sparse: true
-          })
-        }
-      );
-
-      if (updateResponse.ok) {
-        console.log("Added email to invoice for link generation");
-      }
-
-      // Send invoice via QuickBooks
-      const sendResponse = await fetch(
-        `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${customerEmail}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!sendResponse.ok) {
-        const sendResult = await sendResponse.json();
-        console.error("Failed to send invoice:", sendResult);
-      } else {
-        console.log("Invoice sent successfully to:", customerEmail);
-      }
-    } else {
-      console.warn("No email found for customer");
-    }
-
-    // Fetch invoice with InvoiceLink included
-    const invoiceWithLinkResponse = await fetch(
-    `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink&minorversion=65`,
-    {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Accept': 'application/json'
-      }
-    }
-    );
-
-    let invoiceLink = null;
-    if (invoiceWithLinkResponse.ok) {
-    const invoiceWithLink = await invoiceWithLinkResponse.json();
-    invoiceLink = invoiceWithLink.Invoice?.InvoiceLink;
-    console.log("InvoiceLink retrieved:", invoiceLink);
-    } else {
-    const errorData = await invoiceWithLinkResponse.json();
-    console.error("Failed to retrieve InvoiceLink:", errorData);
-    }
-
-    // Fallback if link is not available
-    if (!invoiceLink) {
-    invoiceLink = `https://connect.intuit.com/portal/app/CommerceNetwork/`;
-    }
-
-    // Update order with invoice ID (keep status as available for reuse)
+    // 6. Update Base44 Record
     await base44.asServiceRole.entities.Order.update(order_id, {
-      quickbooks_invoice_id: invoiceId
+      quickbooks_invoice_id: finalInvoiceId
     });
 
     return Response.json({
       success: true,
-      invoice_id: invoiceId,
-      invoice_number: invoiceNumber,
-      invoice_link: invoiceLink
+      invoice_id: finalInvoiceId,
+      invoice_number: finalInvoiceNumber,
+      invoice_link: finalInvoiceLink
     });
 
   } catch (error) {
+    console.error("Script Error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
