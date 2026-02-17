@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
     ]);
 
     const allItems = itemData?.QueryResponse?.Item || [];
+    console.log("QUICKBOOKS ITEMS:", JSON.stringify(allItems, null, 2));
     const findItem = (name) => allItems.find(i => i.Name.toLowerCase() === name.toLowerCase());
     const printingItem = findItem("Printing");
     const shippingItem = findItem("Shipping");
