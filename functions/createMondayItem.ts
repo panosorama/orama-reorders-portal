@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       mutation {
         create_update (
           item_id: ${itemId},
-          body: "${updateText.replace(/\n/g, '\\n').replace(/"/g, '\\"')}"
+          body: ${JSON.stringify(updateText)}
         ) {
           id
         }
