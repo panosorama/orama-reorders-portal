@@ -206,124 +206,18 @@ export default function CustomerReorder() {
             </DialogDescription>
           </DialogHeader>
           {selectedOrder && (
-            <>
-              <div className="space-y-6 overflow-y-auto flex-1">
-                <div>
-                   <div className="flex items-center justify-between mb-3">
-                     <h3 className="font-semibold text-lg">{selectedOrder.product_type}</h3>
-                     {selectedOrder.mockup_url && (
-                       <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg">
-                         <Button
-                           size="sm"
-                           variant="ghost"
-                           onClick={() => setImageZoom(Math.max(100, imageZoom - 25))}
-                           disabled={imageZoom === 100}
-                         >
-                           <ZoomOut className="w-4 h-4" />
-                         </Button>
-                         <span className="text-sm font-medium w-12 text-center">{imageZoom}%</span>
-                         <Button
-                           size="sm"
-                           variant="ghost"
-                           onClick={() => setImageZoom(Math.min(500, imageZoom + 25))}
-                           disabled={imageZoom === 500}
-                         >
-                           <ZoomIn className="w-4 h-4" />
-                         </Button>
-                         <Button
-                           size="sm"
-                           variant="ghost"
-                           onClick={() => {
-                             setImageZoom(100);
-                             setPanX(0);
-                             setPanY(0);
-                           }}
-                           title="Reset view"
-                         >
-                           <RotateCcw className="w-4 h-4" />
-                         </Button>
-                       </div>
-                     )}
-                   </div>
-                   {selectedOrder.mockup_url && (
-                     <div 
-                       className="flex items-center justify-center bg-gray-50 rounded-lg p-4 overflow-hidden max-h-96 cursor-grab active:cursor-grabbing"
-                       onMouseDown={handleMouseDown}
-                       onMouseMove={handleMouseMove}
-                       onMouseUp={handleMouseUp}
-                       onMouseLeave={handleMouseUp}
-                       style={{ userSelect: 'none' }}
-                     >
-                       <img
-                         src={selectedOrder.mockup_url}
-                         alt={selectedOrder.product_type}
-                         className="rounded-lg shadow-lg transition-transform"
-                         style={{ 
-                           transform: `scale(${imageZoom / 100}) translate(${panX}px, ${panY}px)`,
-                           transformOrigin: 'center'
-                         }}
-                         draggable={false}
-                       />
-                     </div>
-                   )}
-                 </div>
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Specifications:</h4>
-                  <p className="text-sm text-slate-700 whitespace-pre-line">
-                    {selectedOrder.specifications}
-                  </p>
-                </div>
-                {selectedOrder.shipping_method && (
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    {selectedOrder.shipping_method === "office_pickup" ? (
-                      <p className="text-blue-800 font-medium">📍 Office Pickup</p>
-                    ) : (
-                     <>
-                       <p className="text-blue-800 font-medium mb-2">📦 Ship To</p>
-                       {selectedOrder.ship_to_address && (
-                         <p className="text-blue-700 text-sm">Address: {selectedOrder.ship_to_address}</p>
-                       )}
-                     </>
-                    )}
-                  </div>
-                )}
-                <div className="py-4 border-t space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal for {selectedOrder.quantity || 1}qty:</span>
-                    <span className="font-semibold">${selectedOrder.pricing.toFixed(2)}</span>
-                  </div>
-                  {selectedOrder.shipping_charge && selectedOrder.shipping_charge > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Shipping:</span>
-                      <span className="font-semibold">${selectedOrder.shipping_charge.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-gray-900 font-semibold">Total:</span>
-                    <span className="text-2xl font-bold">${(selectedOrder.pricing + (selectedOrder.shipping_charge || 0)).toFixed(2)} <span className="text-sm font-normal text-gray-600">+ tax</span></span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-center pt-4 border-t">
-                <Button
-                  onClick={handleApprove}
-                  className="w-full max-w-xs bg-black hover:bg-gray-800 text-white"
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Approve & Pay
-                    </>
-                  )}
-                </Button>
-              </div>
-            </>
+            <div className="overflow-y-auto flex-1">
+              <OrderPreview
+                mockupUrl={selectedOrder.mockup_url}
+                productType={selectedOrder.product_type}
+                specifications={selectedOrder.specifications}
+                quantity={selectedOrder.quantity}
+                pricing={selectedOrder.pricing}
+                shippingCharge={selectedOrder.shipping_charge}
+                onApprove={handleApprove}
+                isProcessing={processing}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>
