@@ -47,138 +47,111 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
-    // 2. Dynamic Item Lookup
+    // 2. PARALLEL LOOKUPS (Saves ~3-4 seconds of total execution time)
     const itemQuery = encodeURIComponent("SELECT * FROM Item WHERE Active = true");
-    const itemRes = await fetch(`${baseUrl}/query?query=${itemQuery}&minorversion=65`, { headers: apiHeaders });
-    const itemData = await itemRes.json();
+    const docQuery = encodeURIComponent("SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1");
+
+    const [itemRes, customerRes, lastInvoiceRes] = await Promise.all([
+      fetch(`${baseUrl}/query?query=${itemQuery}&minorversion=65`, { headers: apiHeaders }),
+      fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders }),
+      fetch(`${baseUrl}/query?query=${docQuery}&minorversion=65`, { headers: apiHeaders })
+    ]);
+
+    const [itemData, customerResult, lastInvoiceData] = await Promise.all([
+      itemRes.json(), customerRes.json(), lastInvoiceRes.json()
+    ]);
+
     const allItems = itemData?.QueryResponse?.Item || [];
     const findItem = (name) => allItems.find(i => i.Name.toLowerCase() === name.toLowerCase());
-
     const printingItem = findItem("Printing");
     const shippingItem = findItem("Shipping");
 
-    if (!printingItem) throw new Error("Printing item not found in QB");
-    const PRINTING_ID = printingItem.Id;
-    const SHIPPING_ID = shippingItem?.Id;
-
-    // 3. Get Customer & Next Doc Number
-    const customerCheck = await fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders });
-    const customerResult = await customerCheck.json();
+    if (!printingItem) throw new Error("Printing item not found");
+    
     const email = customerResult.Customer?.PrimaryEmailAddr?.Address || "placeholder@example.com";
 
-    const lastInvoiceRes = await fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders });
     let currentDocNumber = 1919; 
-    const lastInvoiceData = await lastInvoiceRes.json();
-    if (lastInvoiceData.QueryResponse?.Invoice?.length > 0) {
+    if (lastInvoiceData.QueryResponse?.Invoice?.[0]) {
       const lastVal = lastInvoiceData.QueryResponse.Invoice[0].DocNumber;
       const parsed = parseInt(lastVal.replace(/\D/g, ''));
       if (!isNaN(parsed) && (parsed + 1) > currentDocNumber) currentDocNumber = parsed + 1;
     }
 
-    // 4. Tax State Logic
+    // 3. Tax & Address Logic
     let taxState = "NJ"; 
     const upperAddr = (ship_to_address || "").toUpperCase();
     if (upperAddr.includes(" FL ") || upperAddr.endsWith(" FL") || upperAddr.includes(", FL")) taxState = "FL";
     const zipCode = extractZip(ship_to_address);
 
-    // 5. Create Invoice
-    let attempts = 0;
-    let successData = null;
-
-    while (attempts < 5) {
-      const lines = [
-        {
-          Amount: pricing,
-          DetailType: "SalesItemLineDetail",
-          Description: `${product_type}\n${specifications}`,
-          SalesItemLineDetail: { 
-            ItemRef: { value: PRINTING_ID },
-            Qty: quantity || 1, 
-            UnitPrice: pricing / (quantity || 1),
-            TaxCodeRef: { value: is_tax_exempt ? "NON" : "TAX" }
-          }
-        }
-      ];
-
-      if (shipping_charge && shipping_charge > 0 && SHIPPING_ID) {
-        lines.push({
-          Amount: shipping_charge,
-          DetailType: "SalesItemLineDetail",
-          Description: "Shipping",
-          SalesItemLineDetail: {
-            ItemRef: { value: SHIPPING_ID },
-            Qty: 1,
-            UnitPrice: shipping_charge,
-            TaxCodeRef: { value: "NON" } 
-          }
-        });
+    // 4. Create Invoice
+    const lines = [{
+      Amount: pricing,
+      DetailType: "SalesItemLineDetail",
+      Description: `${product_type}\n${specifications}`,
+      SalesItemLineDetail: { 
+        ItemRef: { value: printingItem.Id },
+        Qty: quantity || 1, 
+        UnitPrice: pricing / (quantity || 1),
+        TaxCodeRef: { value: is_tax_exempt ? "NON" : "TAX" }
       }
+    }];
 
-      const invoicePayload = {
+    if (shipping_charge > 0 && shippingItem) {
+      lines.push({
+        Amount: shipping_charge,
+        DetailType: "SalesItemLineDetail",
+        Description: "Shipping",
+        SalesItemLineDetail: {
+          ItemRef: { value: shippingItem.Id },
+          Qty: 1, UnitPrice: shipping_charge,
+          TaxCodeRef: { value: "NON" } 
+        }
+      });
+    }
+
+    const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
+      method: 'POST', 
+      headers: apiHeaders, 
+      body: JSON.stringify({
         DocNumber: currentDocNumber.toString(),
         CustomerRef: { value: quickbooks_customer_id.toString() },
         BillEmail: { Address: email },
         Line: lines,
-        SalesTermRef: { value: "1" },
         TxnTaxDetail: {}, 
-        ShipAddr: {
-          Line1: ship_to_address,
-          CountrySubDivisionCode: taxState,
-          PostalCode: zipCode,
-          Country: "US"
-        },
+        ShipAddr: { Line1: ship_to_address, CountrySubDivisionCode: taxState, PostalCode: zipCode, Country: "US" },
         PrivateNote: `Order: ${order_id}`
-      };
+      })
+    });
 
-      const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
-        method: 'POST', headers: apiHeaders, body: JSON.stringify(invoicePayload)
-      });
+    const createData = await createRes.json();
+    if (!createRes.ok) throw new Error(`QB Error: ${createData.Fault?.Error?.[0]?.Detail}`);
 
-      const createData = await createRes.json();
-
-      if (createRes.ok) {
-        successData = createData;
-        break; 
-      } else {
-        const error = createData.Fault?.Error?.[0];
-        if (error?.code === "6140") {
-          currentDocNumber++;
-          attempts++;
-        } else {
-          throw new Error(`QB Error: ${error.Detail}`);
-        }
-      }
-    }
-
-    // 6. WAIT AND RETRY FOR INVOICE LINK
-    const newInvoiceId = successData.Invoice.Id;
-    let finalLink = successData.Invoice.InvoiceLink;
+    // 5. SMART LINK GRAB (Wait 1.5s then fetch specifically for the link)
+    const newInvoiceId = createData.Invoice.Id;
+    let finalLink = createData.Invoice.InvoiceLink;
 
     if (!finalLink) {
-      console.log("Invoice created but link missing. Waiting 2 seconds...");
-      await wait(2000); 
-      const readRes = await fetch(`${baseUrl}/invoice/${newInvoiceId}?minorversion=65&include=invoiceLink`, { headers: apiHeaders });
-      const readData = await readRes.json();
-      finalLink = readData.Invoice?.InvoiceLink;
+      await wait(1500); // 1.5 seconds is the "sweet spot"
+      const linkRes = await fetch(`${baseUrl}/invoice/${newInvoiceId}?minorversion=65&include=invoiceLink`, { headers: apiHeaders });
+      const linkData = await linkRes.json();
+      finalLink = linkData.Invoice?.InvoiceLink;
     }
 
-    // If still no link, use the app fallback
+    // Fallback if QBO is still being slow
     if (!finalLink) {
       finalLink = `https://app.qbo.intuit.com/app/invoice?txnId=${newInvoiceId}`;
     }
 
-    // 7. Update Base44
+    // 6. Final DB Update
     const base44 = createClientFromRequest(req);
-    if (base44) await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
+    if (base44) {
+      await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
+    }
 
-    return Response.json({ 
-      success: true, 
-      invoice_id: newInvoiceId,
-      invoice_link: finalLink 
-    });
+    return Response.json({ success: true, invoice_id: newInvoiceId, invoice_link: finalLink });
 
   } catch (error) {
-    console.error("Critical Error:", error.message);
+    console.error("Function Error:", error.message);
     return Response.json({ success: false, error: error.message }, { status: 200 });
   }
 });
