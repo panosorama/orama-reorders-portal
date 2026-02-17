@@ -94,31 +94,32 @@ Deno.serve(async (req) => {
       invoiceNumber, 
       salesTermRef,
       dueDate,
-      fullInvoice: JSON.stringify(invoice.Invoice, null, 2)
+      customerEmail: customer.email
     });
     
-    // Send the invoice to generate the payment link
-    const sendResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${quickbooks_customer_id}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
+    // Send invoice to customer email to generate the payment link
+    if (customer.email) {
+      const sendResponse = await fetch(
+        `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${encodeURIComponent(customer.email)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
         }
+      );
+      
+      if (!sendResponse.ok) {
+        const sendError = await sendResponse.json();
+        console.error("Send invoice error:", sendError);
       }
-    );
-    
-    if (!sendResponse.ok) {
-      const sendError = await sendResponse.json();
-      console.error("Send invoice error:", sendError);
     }
     
-    // Get the shareable customer payment link
-    const shareResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink`,
+    // Get the updated invoice with InvoiceLink
+    const updatedInvoiceResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink&minorversion=65`,
       {
-        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json'
@@ -126,16 +127,14 @@ Deno.serve(async (req) => {
       }
     );
     
-    const shareData = await shareResponse.json();
-    console.log("Share data after send:", JSON.stringify(shareData, null, 2));
-    
-    // Extract the InvoiceLink which is the customer payment URL
-    const invoiceLink = shareData.Invoice?.InvoiceLink;
+    const updatedInvoice = await updatedInvoiceResponse.json();
+    const invoiceLink = updatedInvoice.Invoice?.InvoiceLink;
     
     console.log("Invoice link extracted:", { 
       invoiceLink, 
       hasLink: !!invoiceLink,
-      invoiceId 
+      invoiceId,
+      fullInvoice: JSON.stringify(updatedInvoice.Invoice, null, 2)
     });
 
     // Update order with invoice ID (keep status as available for reuse)
