@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       const lines = [];
       
       // Main product line
-      const productLine = {
+      lines.push({
         Amount: pricing,
         DetailType: "SalesItemLineDetail",
         Description: `${product_type}\n${specifications}`,
@@ -84,17 +84,11 @@ Deno.serve(async (req) => {
           Qty: quantity || 1, 
           UnitPrice: pricing / (quantity || 1)
         }
-      };
-      
-      // Mark as taxable if not tax exempt
-      if (!is_tax_exempt) {
-        productLine.SalesItemLineDetail.TaxCodeRef = { value: "1" };
-      }
-      lines.push(productLine);
+      });
 
       // Shipping line if applicable
       if (shipping_charge && shipping_charge > 0) {
-        const shippingLine = {
+        lines.push({
           Amount: shipping_charge,
           DetailType: "SalesItemLineDetail",
           Description: "Shipping",
@@ -102,13 +96,7 @@ Deno.serve(async (req) => {
             Qty: 1,
             UnitPrice: shipping_charge
           }
-        };
-        
-        // Shipping is typically taxable too
-        if (!is_tax_exempt) {
-          shippingLine.SalesItemLineDetail.TaxCodeRef = { value: "1" };
-        }
-        lines.push(shippingLine);
+        });
       }
 
       const invoicePayload = {
@@ -130,18 +118,8 @@ Deno.serve(async (req) => {
         };
       }
 
-      // Add tax config
-      if (!is_tax_exempt) {
-        // Let QB auto-calculate based on shipping address
-        invoicePayload.TxnTaxDetail = {
-          TxnTaxCodeRef: { value: "1" }
-        };
-      } else {
-        // Tax exempt
-        invoicePayload.TxnTaxDetail = {
-          DefaultTaxCodeRef: { value: "2" }
-        };
-      }
+      // Don't set explicit tax codes - let QB auto-calculate based on shipping address
+      // QB will use default tax settings for the account
 
       console.log(`Attempt ${attempts + 1}: Creating Invoice #${currentDocNumber}...`);
       
