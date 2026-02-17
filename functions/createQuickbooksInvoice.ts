@@ -51,8 +51,9 @@ Deno.serve(async (req) => {
     lastDocNumber = parseInt(lastDocNumber) || 4999;
     const nextDocNumber = (lastDocNumber + 1).toString();
 
-    // Create invoice using the pre-selected customer (let QuickBooks auto-assign if preferred)
+    // Create invoice with the calculated invoice number
     const invoiceData = {
+      DocNumber: nextDocNumber,
       CustomerRef: {
         value: quickbooks_customer_id
       },
