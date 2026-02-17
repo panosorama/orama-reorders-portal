@@ -131,36 +131,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fetch full invoice details to check for payment link
-    const invoiceDetailResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?minorversion=65`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      }
-    );
-
-    let invoiceLink = null;
-    
-    if (invoiceDetailResponse.ok) {
-      const invoiceDetail = await invoiceDetailResponse.json();
-      // Check if invoice has a payment link property
-      if (invoiceDetail.Invoice?.paymentlinks?.[0]?.url) {
-        invoiceLink = invoiceDetail.Invoice.paymentlinks[0].url;
-        console.log("Payment link found:", invoiceLink);
-      } else if (invoiceDetail.Invoice?.paymentlinks?.[0]) {
-        invoiceLink = invoiceDetail.Invoice.paymentlinks[0];
-        console.log("Payment link object:", invoiceLink);
-      }
-    }
-
-    // Fallback to customer portal link if no direct payment link
-    if (!invoiceLink) {
-      invoiceLink = `https://connect.intuit.com/app/invoice/${invoiceNumber}`;
-    }
+    // Generate customer payment link using Intuit Commerce link format
+    const invoiceLink = `https://connect.intuit.com/app/payments/invoice/${invoiceId}?customer=${quickbooks_customer_id}`;
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
