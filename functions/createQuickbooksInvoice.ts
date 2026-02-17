@@ -87,24 +87,15 @@ Deno.serve(async (req) => {
       salesTermRef,
       dueDate
     });
+    
+    // Use the direct QuickBooks invoice URL
+    const invoiceLink = `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
       quickbooks_invoice_id: invoiceId
     });
 
-    // Final verification logs
-    console.log("Final response data:", {
-      success: true,
-      invoice_id: invoiceId,
-      invoice_number: invoiceNumber,
-      has_invoice_link: !!invoiceLink,
-      invoice_link: invoiceLink
-    });
-
-    // Use the direct QuickBooks invoice URL
-    const invoiceLink = `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
-    
     return Response.json({
       success: true,
       invoice_id: invoiceId,
