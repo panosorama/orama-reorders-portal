@@ -201,63 +201,65 @@ export default function CustomerReorder() {
             <DialogTitle className="text-2xl">Review Your Order</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-6 overflow-y-auto flex-1">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">{selectedOrder.product_type}</h3>
-                {selectedOrder.mockup_url && (
-                  <img
-                    src={selectedOrder.mockup_url}
-                    alt={selectedOrder.product_type}
-                    className="w-full rounded-lg shadow-lg"
-                  />
-                )}
-              </div>
-              <div className="bg-slate-50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">Specifications:</h4>
-                <p className="text-sm text-slate-700 whitespace-pre-line">
-                  {selectedOrder.specifications}
-                </p>
-              </div>
-              {selectedOrder.shipping_method && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  {selectedOrder.shipping_method === "office_pickup" ? (
-                    <p className="text-blue-800 font-medium">📍 Office Pickup</p>
-                  ) : (
-                   <>
-                     <p className="text-blue-800 font-medium mb-2">📦 Ship To</p>
-                     {selectedOrder.ship_to_address && (
-                       <p className="text-blue-700 text-sm">Address: {selectedOrder.ship_to_address}</p>
-                     )}
-                   </>
+            <>
+              <div className="space-y-6 overflow-y-auto flex-1">
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">{selectedOrder.product_type}</h3>
+                  {selectedOrder.mockup_url && (
+                    <img
+                      src={selectedOrder.mockup_url}
+                      alt={selectedOrder.product_type}
+                      className="w-full rounded-lg shadow-lg"
+                    />
                   )}
                 </div>
-              )}
-              <div className="flex justify-between items-center py-4 border-t">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">{selectedOrder.quantity ? `Total for ${selectedOrder.quantity}` : 'Total'}</p>
-                  <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2">Specifications:</h4>
+                  <p className="text-sm text-slate-700 whitespace-pre-line">
+                    {selectedOrder.specifications}
+                  </p>
+                </div>
+                {selectedOrder.shipping_method && (
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    {selectedOrder.shipping_method === "office_pickup" ? (
+                      <p className="text-blue-800 font-medium">📍 Office Pickup</p>
+                    ) : (
+                     <>
+                       <p className="text-blue-800 font-medium mb-2">📦 Ship To</p>
+                       {selectedOrder.ship_to_address && (
+                         <p className="text-blue-700 text-sm">Address: {selectedOrder.ship_to_address}</p>
+                       )}
+                     </>
+                    )}
+                  </div>
+                )}
+                <div className="flex justify-between items-center py-4 border-t">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">{selectedOrder.quantity ? `Total for ${selectedOrder.quantity}` : 'Total'}</p>
+                    <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-center pt-4 border-t">
-              <Button
-                onClick={handleApprove}
-                className="w-full max-w-xs bg-black hover:bg-gray-800 text-white"
-                disabled={processing}
-              >
-                {processing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve & Pay
-                  </>
-                )}
-              </Button>
-            </div>
+              <div className="flex justify-center pt-4 border-t">
+                <Button
+                  onClick={handleApprove}
+                  className="w-full max-w-xs bg-black hover:bg-gray-800 text-white"
+                  disabled={processing}
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Approve & Pay
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
