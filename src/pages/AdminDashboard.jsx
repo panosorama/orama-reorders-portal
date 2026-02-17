@@ -232,7 +232,7 @@ export default function AdminDashboard() {
               alt="Orama Business Solutions"
               className="h-14 w-auto object-contain"
             />
-            <p className="text-gray-600 text-sm">Customer Reorder Portal</p>
+            <p className="text-gray-900 text-base font-bold">Customer Reorders Portal</p>
           </div>
           <div className="flex flex-col items-end gap-3">
             <Button
