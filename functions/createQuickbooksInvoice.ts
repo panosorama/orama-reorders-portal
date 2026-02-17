@@ -92,7 +92,10 @@ Deno.serve(async (req) => {
     }
 
     const invoiceId = invoice.Invoice.Id;
-    const invoiceLink = `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
+    const invoiceNumber = invoice.Invoice.DocNumber;
+    
+    // Get the customer-facing invoice link for payment
+    const invoiceLink = invoice.Invoice.InvoiceLink || `https://quickbooks.intuit.com/pay/invoice/${invoiceId}`;
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
@@ -102,6 +105,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       invoice_id: invoiceId,
+      invoice_number: invoiceNumber,
       invoice_link: invoiceLink
     });
 
