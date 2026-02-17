@@ -47,33 +47,23 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
-    // 2. ROBUST ITEM LOOKUP
-    // We fetch ALL active services/items to find the best match manually to avoid query errors
+    // 2. Dynamic Item Lookup
     const itemQuery = encodeURIComponent("SELECT * FROM Item WHERE Active = true");
     const itemRes = await fetch(`${baseUrl}/query?query=${itemQuery}&minorversion=65`, { headers: apiHeaders });
     const itemData = await itemRes.json();
-    
-    // Safety check: Ensure QueryResponse and Item array exist
     const allItems = itemData?.QueryResponse?.Item || [];
-    
-    // Helper to find item by name (Case Insensitive)
     const findItem = (name) => allItems.find(i => i.Name.toLowerCase() === name.toLowerCase());
 
     const printingItem = findItem("Printing");
     const shippingItem = findItem("Shipping");
 
-    if (!printingItem) {
-      throw new Error(`Could not find 'Printing' in your QB Product/Service list. Available items: ${allItems.map(i => i.Name).join(', ')}`);
-    }
-
+    if (!printingItem) throw new Error("Printing item not found in QB");
     const PRINTING_ID = printingItem.Id;
     const SHIPPING_ID = shippingItem?.Id;
 
     // 3. Get Customer & Next Doc Number
     const customerCheck = await fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders });
     const customerResult = await customerCheck.json();
-    if (!customerCheck.ok) throw new Error("Customer not found in QB");
-    
     const email = customerResult.Customer?.PrimaryEmailAddr?.Address || "placeholder@example.com";
 
     const lastInvoiceRes = await fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders });
@@ -85,7 +75,7 @@ Deno.serve(async (req) => {
       if (!isNaN(parsed) && (parsed + 1) > currentDocNumber) currentDocNumber = parsed + 1;
     }
 
-    // 4. Tax State Logic (Force NJ if not FL)
+    // 4. Tax State Logic
     let taxState = "NJ"; 
     const upperAddr = (ship_to_address || "").toUpperCase();
     if (upperAddr.includes(" FL ") || upperAddr.endsWith(" FL") || upperAddr.includes(", FL")) taxState = "FL";
@@ -130,7 +120,7 @@ Deno.serve(async (req) => {
         BillEmail: { Address: email },
         Line: lines,
         SalesTermRef: { value: "1" },
-        TxnTaxDetail: {}, // Triggers Automated Tax
+        TxnTaxDetail: {}, 
         ShipAddr: {
           Line1: ship_to_address,
           CountrySubDivisionCode: taxState,
@@ -155,17 +145,37 @@ Deno.serve(async (req) => {
           currentDocNumber++;
           attempts++;
         } else {
-          throw new Error(`QB Error: ${error.Detail} (${error.element})`);
+          throw new Error(`QB Error: ${error.Detail}`);
         }
       }
     }
 
-    // 6. Finalize
+    // 6. WAIT AND RETRY FOR INVOICE LINK
     const newInvoiceId = successData.Invoice.Id;
+    let finalLink = successData.Invoice.InvoiceLink;
+
+    if (!finalLink) {
+      console.log("Invoice created but link missing. Waiting 2 seconds...");
+      await wait(2000); 
+      const readRes = await fetch(`${baseUrl}/invoice/${newInvoiceId}?minorversion=65&include=invoiceLink`, { headers: apiHeaders });
+      const readData = await readRes.json();
+      finalLink = readData.Invoice?.InvoiceLink;
+    }
+
+    // If still no link, use the app fallback
+    if (!finalLink) {
+      finalLink = `https://app.qbo.intuit.com/app/invoice?txnId=${newInvoiceId}`;
+    }
+
+    // 7. Update Base44
     const base44 = createClientFromRequest(req);
     if (base44) await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
 
-    return Response.json({ success: true, invoice_id: newInvoiceId });
+    return Response.json({ 
+      success: true, 
+      invoice_id: newInvoiceId,
+      invoice_link: finalLink 
+    });
 
   } catch (error) {
     console.error("Critical Error:", error.message);
