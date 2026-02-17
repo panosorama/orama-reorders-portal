@@ -322,10 +322,20 @@ export default function CustomerReorder() {
                     )}
                   </div>
                 )}
-                <div className="flex justify-between items-center py-4 border-t">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">{selectedOrder.quantity ? `Total for ${selectedOrder.quantity}` : 'Total'}</p>
-                    <span className="text-2xl font-bold">Total: ${selectedOrder.pricing.toFixed(2)}</span>
+                <div className="py-4 border-t space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal for {selectedOrder.quantity || 1}qty:</span>
+                    <span className="font-semibold">${selectedOrder.pricing.toFixed(2)}</span>
+                  </div>
+                  {selectedOrder.shipping_charge && selectedOrder.shipping_charge > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Shipping:</span>
+                      <span className="font-semibold">${selectedOrder.shipping_charge.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-gray-900 font-semibold">Total:</span>
+                    <span className="text-2xl font-bold">${(selectedOrder.pricing + (selectedOrder.shipping_charge || 0)).toFixed(2)} <span className="text-sm font-normal text-gray-600">+ tax</span></span>
                   </div>
                 </div>
               </div>
