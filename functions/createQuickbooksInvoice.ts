@@ -76,18 +76,20 @@ Deno.serve(async (req) => {
     }
 
     const invoiceId = invoice.Invoice.Id;
-    const invoiceNumber = invoice.Invoice.DocNumber;
-    const salesTermRef = invoice.Invoice.SalesTermRef;
-    const dueDate = invoice.Invoice.DueDate;
+    let invoiceNumber = invoice.Invoice.DocNumber || invoice.Invoice.No;
+    
+    // If still no number, extract from invoice data
+    if (!invoiceNumber) {
+      // Try parsing invoice details or use ID as fallback
+      invoiceNumber = invoice.Invoice.Id;
+    }
 
-    // Log the full invoice response to see what fields are available
-    console.log("Full Invoice Response:", JSON.stringify(invoice.Invoice, null, 2));
+    const salesTermRef = invoice.Invoice.SalesTermRef;
 
     console.log("Invoice created successfully:", { 
       invoiceId, 
       invoiceNumber, 
-      salesTermRef,
-      dueDate
+      salesTermRef
     });
 
     // Retrieve customer email for invoice sending
