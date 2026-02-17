@@ -79,7 +79,8 @@ export default function CustomerReorder() {
         pricing: selectedOrder.pricing,
         quantity: selectedOrder.quantity || 1,
         shipping_charge: selectedOrder.shipping_charge || 0,
-        is_tax_exempt: customer.is_tax_exempt || false
+        is_tax_exempt: customer.is_tax_exempt || false,
+        ship_to_address: selectedOrder.ship_to_address || customer.ship_to_address || ""
       });
 
       console.log("QB Response:", qbResponse);

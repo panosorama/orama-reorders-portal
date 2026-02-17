@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     
     let body;
     try { body = await req.json(); } catch(e) { throw new Error("Invalid JSON"); }
-    const { order_id, quickbooks_customer_id, product_type, specifications, pricing, quantity, shipping_charge, is_tax_exempt } = body;
+    const { order_id, quickbooks_customer_id, product_type, specifications, pricing, quantity, shipping_charge, is_tax_exempt, ship_to_address } = body;
 
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
@@ -113,20 +113,20 @@ Deno.serve(async (req) => {
         SalesTermRef: { value: "1" }
       };
 
-      // Add tax if not exempt
+      // Add shipping address for QB tax calculation
+      if (ship_to_address) {
+        invoicePayload.ShipAddr = {
+          Line1: ship_to_address,
+          CountrySubDivisionCode: "NJ",
+          Country: "US"
+        };
+      }
+
+      // Add tax config
       if (!is_tax_exempt) {
+        // Let QB auto-calculate based on shipping address
         invoicePayload.TxnTaxDetail = {
-          TaxLineDetail: [{
-            LineNum: lines.length,
-            PercentBased: true,
-            TaxPercent: 6.625
-          }],
-          TxnTaxLineDetail: {
-            TaxLineDetail: [{
-              PercentBased: true,
-              TaxPercent: 6.625
-            }]
-          }
+          TxnTaxCodeRef: { value: "1" }
         };
       } else {
         // Tax exempt
