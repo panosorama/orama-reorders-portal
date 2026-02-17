@@ -98,26 +98,12 @@ Deno.serve(async (req) => {
     
     console.log("Invoice created:", { invoiceId, invoiceNumber });
     
-    // Send the invoice via email to generate the customer payment link
-    const sendResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}/send?sendTo=${invoice.Invoice.CustomerRef.value}`,
+    // Get the shareable customer payment link
+    // This endpoint generates the link customers can use to view and pay the invoice
+    const shareResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?include=invoiceLink`,
       {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/octet-stream'
-        }
-      }
-    );
-    
-    const sendResult = await sendResponse.json();
-    console.log("Send invoice result:", JSON.stringify(sendResult, null, 2));
-    
-    // Fetch the invoice again to get the InvoiceLink
-    const fullInvoiceResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice/${invoiceId}?minorversion=65`,
-      {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json'
@@ -125,14 +111,17 @@ Deno.serve(async (req) => {
       }
     );
     
-    const fullInvoice = await fullInvoiceResponse.json();
-    console.log("Full invoice after send:", JSON.stringify(fullInvoice, null, 2));
+    const shareData = await shareResponse.json();
+    console.log("Share data:", JSON.stringify(shareData, null, 2));
     
-    // The InvoiceLink field should contain the customer payment link
-    const invoiceLink = fullInvoice.Invoice?.InvoiceLink || 
-                       `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
+    // Extract the InvoiceLink which is the customer payment URL
+    const invoiceLink = shareData.Invoice?.InvoiceLink;
     
-    console.log("Final link:", { invoiceLink, invoiceId });
+    console.log("Invoice link extracted:", { 
+      invoiceLink, 
+      hasLink: !!invoiceLink,
+      invoiceId 
+    });
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
