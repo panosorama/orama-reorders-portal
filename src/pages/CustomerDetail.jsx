@@ -374,12 +374,14 @@ export default function CustomerDetail() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {order.mockup_url && (
-                  <img
-                    src={order.mockup_url}
-                    alt={order.product_type}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                )}
+                   <div className="flex items-center justify-center bg-gray-50 rounded-lg h-48">
+                     <img
+                       src={order.mockup_url}
+                       alt={order.product_type}
+                       className="max-w-full max-h-full object-contain"
+                     />
+                   </div>
+                 )}
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <p className="text-sm text-slate-700 whitespace-pre-line">{order.specifications}</p>
                 </div>
