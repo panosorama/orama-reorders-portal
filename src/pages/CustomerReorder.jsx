@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, ZoomIn, ZoomOut } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function CustomerReorder() {
@@ -13,6 +14,7 @@ export default function CustomerReorder() {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [imageZoom, setImageZoom] = useState(100);
 
   const { data: customer } = useQuery({
     queryKey: ['customer-by-token', token],
@@ -207,17 +209,41 @@ export default function CustomerReorder() {
             <>
               <div className="space-y-6 overflow-y-auto flex-1">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">{selectedOrder.product_type}</h3>
-                  {selectedOrder.mockup_url && (
-                     <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <h3 className="font-semibold text-lg">{selectedOrder.product_type}</h3>
+                     {selectedOrder.mockup_url && (
+                       <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg">
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => setImageZoom(Math.max(100, imageZoom - 25))}
+                           disabled={imageZoom === 100}
+                         >
+                           <ZoomOut className="w-4 h-4" />
+                         </Button>
+                         <span className="text-sm font-medium w-12 text-center">{imageZoom}%</span>
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => setImageZoom(Math.min(300, imageZoom + 25))}
+                           disabled={imageZoom === 300}
+                         >
+                           <ZoomIn className="w-4 h-4" />
+                         </Button>
+                       </div>
+                     )}
+                   </div>
+                   {selectedOrder.mockup_url && (
+                     <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4 overflow-auto max-h-96">
                        <img
                          src={selectedOrder.mockup_url}
                          alt={selectedOrder.product_type}
-                         className="max-w-full max-h-96 object-contain rounded-lg shadow-lg"
+                         className="rounded-lg shadow-lg"
+                         style={{ width: `${imageZoom}%`, height: 'auto' }}
                        />
                      </div>
                    )}
-                </div>
+                 </div>
                 <div className="bg-slate-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Specifications:</h4>
                   <p className="text-sm text-slate-700 whitespace-pre-line">
