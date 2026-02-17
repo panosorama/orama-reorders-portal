@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'Orama Reorder Portal <orders@oramadigitaldesign.com>',
+          from: user.email,
           to: email,
           subject: `Reorder Placed - ${product_type}`,
           html: htmlBody
