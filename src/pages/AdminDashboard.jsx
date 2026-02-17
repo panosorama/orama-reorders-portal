@@ -482,66 +482,65 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCustomers.map((customer) => (
-            <Card key={customer.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-xl">{customer.customer_name}</CardTitle>
-                {customer.company_name && (
-                  <p className="text-sm text-slate-600">{customer.company_name}</p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {customer.email && (
-                  <p className="text-sm text-slate-600">{customer.email}</p>
-                )}
-                <div className="flex gap-2">
-                  <Link to={createPageUrl(`CustomerDetail?id=${customer.id}`)} className="flex-1">
-                    <Button className="w-full bg-black hover:bg-gray-800 text-white">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Manage Orders
-                    </Button>
-                  </Link>
-                </div>
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => copyLink(customer.unique_token)}
-                >
-                  {copiedToken === customer.unique_token ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2 text-green-600" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy Customer Link
-                    </>
-                  )}
-                </Button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => openEditDialog(customer)}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => setDeleteCustomer(customer)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+           {filteredCustomers.map((customer) => (
+             <Card key={customer.id} className="hover:shadow-lg transition-all duration-300 border-slate-200">
+               <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
+                 <div className="flex-1">
+                   <CardTitle className="text-base">{customer.customer_name}</CardTitle>
+                   {customer.company_name && (
+                     <p className="text-xs text-slate-600 mt-1">{customer.company_name}</p>
+                   )}
+                 </div>
+                 <DropdownMenu>
+                   <DropdownMenuTrigger asChild>
+                     <Button variant="ghost" size="icon" className="h-8 w-8">
+                       <MoreVertical className="w-4 h-4" />
+                     </Button>
+                   </DropdownMenuTrigger>
+                   <DropdownMenuContent align="end">
+                     <DropdownMenuItem onClick={() => openEditDialog(customer)}>
+                       <Edit className="w-4 h-4 mr-2" />
+                       Edit
+                     </DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => setDeleteCustomer(customer)} className="text-red-600">
+                       <Trash2 className="w-4 h-4 mr-2" />
+                       Delete
+                     </DropdownMenuItem>
+                   </DropdownMenuContent>
+                 </DropdownMenu>
+               </CardHeader>
+               <CardContent className="space-y-2">
+                 {customer.email && (
+                   <p className="text-xs text-slate-600">{customer.email}</p>
+                 )}
+                 <Link to={createPageUrl(`CustomerDetail?id=${customer.id}`)} className="block">
+                   <Button variant="outline" className="w-full h-8 text-xs">
+                     <ExternalLink className="w-3 h-3 mr-1" />
+                     Manage Orders
+                   </Button>
+                 </Link>
+                 <Button
+                   variant="secondary"
+                   className="w-full h-8 text-xs"
+                   onClick={() => copyLink(customer.unique_token)}
+                 >
+                   {copiedToken === customer.unique_token ? (
+                     <>
+                       <Check className="w-3 h-3 mr-1 text-green-600" />
+                       Copied!
+                     </>
+                   ) : (
+                     <>
+                       <Copy className="w-3 h-3 mr-1" />
+                       Copy Link
+                     </>
+                   )}
+                 </Button>
+               </CardContent>
+             </Card>
+           ))}
+         </div>
 
         {customers.length === 0 && (
           <div className="text-center py-16">
