@@ -2,8 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper to extract Zip Code for better tax accuracy
 const extractZip = (addr) => {
+  if (!addr) return "";
   const zipMatch = addr.match(/\b\d{5}(-\d{4})?\b/);
   return zipMatch ? zipMatch[0] : "";
 };
@@ -27,13 +27,18 @@ Deno.serve(async (req) => {
       ship_to_address 
     } = body;
 
-    // 1. Environment Variables
+    // DEBUG: Log the IDs to your server console
+    console.log("Checking IDs before QB call:");
+    console.log("- Customer ID:", quickbooks_customer_id);
+    console.log("- Printing ID: 200000701");
+    console.log("- Shipping ID: 200000311");
+
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
     const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
     const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
 
-    // 2. Authentication
+    // 2. Auth
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -55,15 +60,18 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
-    // 3. Setup Customer & Doc Number
-    const [customerRes, lastInvoiceRes] = await Promise.all([
-      fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders }),
-      fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders })
-    ]);
-
-    const customerData = await customerRes.json();
+    // 3. Verify Customer Exists first
+    const customerCheck = await fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders });
+    if (!customerCheck.ok) {
+      const errTxt = await customerCheck.text();
+      console.error("Customer Lookup Failed:", errTxt);
+      throw new Error(`Invalid Customer ID: ${quickbooks_customer_id}. Please verify this customer exists in QB.`);
+    }
+    const customerData = await customerCheck.json();
     const email = customerData.Customer?.PrimaryEmailAddr?.Address || "placeholder@example.com";
 
+    // 4. Get Doc Number
+    const lastInvoiceRes = await fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders });
     let currentDocNumber = 1919; 
     const lastInvoiceData = await lastInvoiceRes.json();
     if (lastInvoiceData.QueryResponse?.Invoice?.length > 0) {
@@ -72,47 +80,38 @@ Deno.serve(async (req) => {
       if (!isNaN(parsed) && (parsed + 1) > currentDocNumber) currentDocNumber = parsed + 1;
     }
 
-    // 4. Determine Tax State (Nexus Logic)
-    // We only have permits in NJ and FL. 
-    // If it's not FL, we force NJ to ensure tax is collected.
+    // 5. Tax State Logic
     let taxState = "NJ"; 
-    const upperAddr = ship_to_address.toUpperCase();
-    if (upperAddr.includes(" FL ") || upperAddr.endsWith(" FL") || upperAddr.includes(", FL")) {
-      taxState = "FL";
-    }
-
+    const upperAddr = (ship_to_address || "").toUpperCase();
+    if (upperAddr.includes(" FL ") || upperAddr.endsWith(" FL") || upperAddr.includes(", FL")) taxState = "FL";
     const zipCode = extractZip(ship_to_address);
 
-    // 5. Create Invoice Loop
+    // 6. Create Invoice
     let attempts = 0;
     let successData = null;
-    const PRINTING_ITEM_ID = "200000701"; 
-    const SHIPPING_ITEM_ID = "200000311"; 
 
     while (attempts < 5) {
-      const lines = [];
-      
-      // Printing Line (Taxable unless exempt)
-      lines.push({
-        Amount: pricing,
-        DetailType: "SalesItemLineDetail",
-        Description: `${product_type}\n${specifications}`,
-        SalesItemLineDetail: { 
-          ItemRef: { value: PRINTING_ITEM_ID, name: "Printing" },
-          Qty: quantity || 1, 
-          UnitPrice: pricing / (quantity || 1),
-          TaxCodeRef: { value: is_tax_exempt ? "NON" : "TAX" }
+      const lines = [
+        {
+          Amount: pricing,
+          DetailType: "SalesItemLineDetail",
+          Description: `${product_type}\n${specifications}`,
+          SalesItemLineDetail: { 
+            ItemRef: { value: "200000701" }, // PRINTING
+            Qty: quantity || 1, 
+            UnitPrice: pricing / (quantity || 1),
+            TaxCodeRef: { value: is_tax_exempt ? "NON" : "TAX" }
+          }
         }
-      });
+      ];
 
-      // Shipping Line (Always NON-taxable)
       if (shipping_charge && shipping_charge > 0) {
         lines.push({
           Amount: shipping_charge,
           DetailType: "SalesItemLineDetail",
           Description: "Shipping",
           SalesItemLineDetail: {
-            ItemRef: { value: SHIPPING_ITEM_ID, name: "Shipping" },
+            ItemRef: { value: "200000311" }, // SHIPPING
             Qty: 1,
             UnitPrice: shipping_charge,
             TaxCodeRef: { value: "NON" } 
@@ -122,25 +121,25 @@ Deno.serve(async (req) => {
 
       const invoicePayload = {
         DocNumber: currentDocNumber.toString(),
-        CustomerRef: { value: quickbooks_customer_id },
+        CustomerRef: { value: quickbooks_customer_id.toString() },
         BillEmail: { Address: email },
         Line: lines,
         SalesTermRef: { value: "1" },
-        TxnTaxDetail: {}, // Triggers AST calculation
+        TxnTaxDetail: {}, 
         ShipAddr: {
           Line1: ship_to_address,
           CountrySubDivisionCode: taxState,
           PostalCode: zipCode,
           Country: "US"
-        },
-        PrivateNote: `Base44 Order ID: ${order_id}`
+        }
       };
 
-      const createRes = await fetch(`${baseUrl}/invoice?minorversion=65`, {
+      const createRes = await fetch(`${baseUrl}/invoice?minorversion=70`, { // Updated minorversion
         method: 'POST', headers: apiHeaders, body: JSON.stringify(invoicePayload)
       });
 
       const createData = await createRes.json();
+
       if (createRes.ok) {
         successData = createData;
         break; 
@@ -150,26 +149,18 @@ Deno.serve(async (req) => {
           currentDocNumber++;
           attempts++;
         } else {
-          throw new Error(`QB Error: ${error?.Message || JSON.stringify(createData)}`);
+          // THIS IS THE KEY: Log the exact failing element
+          console.error("CRITICAL QB ERROR:", JSON.stringify(error, null, 2));
+          throw new Error(`QB Error: ${error.Detail} (Field: ${error.element})`);
         }
       }
     }
 
-    // 6. Finalize & Response
     const newInvoiceId = successData.Invoice.Id;
-    let finalLink = successData.Invoice.InvoiceLink || `https://app.qbo.intuit.com/app/invoice?txnId=${newInvoiceId}`;
+    const base44 = createClientFromRequest(req);
+    if (base44) await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
 
-    try {
-      const base44 = createClientFromRequest(req);
-      if (base44) await base44.asServiceRole.entities.Order.update(order_id, { quickbooks_invoice_id: newInvoiceId });
-    } catch (e) { console.error("Database update failed", e); }
-
-    return Response.json({
-      success: true,
-      invoice_id: newInvoiceId,
-      invoice_number: successData.Invoice.DocNumber,
-      invoice_link: finalLink
-    });
+    return Response.json({ success: true, invoice_id: newInvoiceId });
 
   } catch (error) {
     return Response.json({ success: false, error: error.message }, { status: 200 });
