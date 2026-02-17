@@ -129,29 +129,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create payment link using the Payments API
+    // Create payment request link using Payments API
     const paymentLinkResponse = await fetch(
-      `https://quickbooks.api.intuit.com/quickbooks/v4/payments/payloads`,
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoices/${invoiceId}/paymentlinks`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          invoiceId: invoiceId,
-          customerId: quickbooks_customer_id
-        })
+        }
       }
     );
 
-    let invoiceLink = `https://invoices.intuit.com/app/invoice?invoiceId=${invoiceId}`;
+    let invoiceLink = `https://invoices.intuit.com/app/invoice?invoiceId=${invoiceId}&filter=OPEN&paidStatus=UNPAID`;
     
     if (paymentLinkResponse.ok) {
       const paymentData = await paymentLinkResponse.json();
-      if (paymentData.href) {
-        invoiceLink = paymentData.href;
+      console.log("Payment Link Response:", paymentData);
+      if (paymentData.Invoice?.paymentlinks?.[0]?.paymentlink) {
+        invoiceLink = paymentData.Invoice.paymentlinks[0].paymentlink;
       }
+    } else {
+      const errorData = await paymentLinkResponse.json();
+      console.log("Payment link creation failed:", errorData);
     }
 
     // Update order with invoice ID (keep status as available for reuse)
