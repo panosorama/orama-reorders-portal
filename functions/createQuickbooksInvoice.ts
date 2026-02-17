@@ -33,9 +33,9 @@ Deno.serve(async (req) => {
     
     const accessToken = tokenData.access_token;
 
-    // Get company preferences to fetch next invoice number
-    const prefsResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/preferences?minorversion=65`,
+    // Get the last invoice to determine next number
+    const queryResponse = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=SELECT * FROM Invoice ORDER BY DocNumber DESC MAXRESULTS 1&minorversion=65`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -44,13 +44,14 @@ Deno.serve(async (req) => {
       }
     );
     
-    const prefsData = await prefsResponse.json();
-    const nextDocNum = prefsData.Preferences?.SalesFormsPrefs?.CustomTxnNumbers === true
-      ? null
-      : undefined;
+    const queryData = await queryResponse.json();
+    const lastInvoice = queryData.QueryResponse?.Invoice?.[0];
+    const lastDocNumber = lastInvoice?.DocNumber || "0";
+    const nextDocNumber = (parseInt(lastDocNumber) + 1).toString();
 
     // Create invoice using the pre-selected customer
     const invoiceData = {
+      DocNumber: nextDocNumber,
       CustomerRef: {
         value: quickbooks_customer_id
       },
@@ -68,8 +69,7 @@ Deno.serve(async (req) => {
       },
       SalesTermRef: {
         value: "3"
-      },
-      ...(nextDocNum !== undefined && { DocNumber: nextDocNum })
+      }
     };
 
     const invoiceResponse = await fetch(
