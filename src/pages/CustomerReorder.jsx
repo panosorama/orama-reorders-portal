@@ -176,7 +176,10 @@ export default function CustomerReorder() {
                       </span>
                     </div>
                     <Button 
-                      onClick={() => handleReorder(order)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReorder(order);
+                      }}
                       className="bg-[#EF4444] hover:bg-[#DC2626] text-white transition-all duration-300 shadow-md hover:shadow-lg"
                     >
                       Reorder
