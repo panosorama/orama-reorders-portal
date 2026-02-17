@@ -22,21 +22,13 @@ Shipping: ${shipping_info}
 
 Invoice #${invoice_number} has been created in QuickBooks and the task has been added to Monday.com.`;
 
-    // Use Resend or another method to send emails
-    // For now, we'll use the SendEmail integration which works for external emails in backend
+    // Use Base44's built-in SendEmail integration
     const emailPromises = emails.map(email =>
-      fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: 'Orama Reorder Portal <orders@oramadigitaldesign.com>',
-          to: email,
-          subject: `Reorder Placed - ${product_type}`,
-          text: emailBody
-        })
+      base44.integrations.Core.SendEmail({
+        from_name: 'Orama Reorder Portal',
+        to: email,
+        subject: `Reorder Placed - ${product_type}`,
+        body: emailBody
       })
     );
 
