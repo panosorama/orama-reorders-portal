@@ -131,8 +131,40 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Generate customer payment link using Intuit Commerce link format
-    const invoiceLink = `https://connect.intuit.com/app/payments/invoice/${invoiceId}?customer=${quickbooks_customer_id}`;
+    // Create secure payment link via QuickBooks Payments API
+    let invoiceLink = null;
+    
+    try {
+      const linkResponse = await fetch(
+        `https://quickbooks.api.intuit.com/quickbooks/v4/payments/links`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            entityId: invoiceId,
+            entityType: "invoice",
+            customerId: quickbooks_customer_id
+          })
+        }
+      );
+
+      if (linkResponse.ok) {
+        const linkData = await linkResponse.json();
+        invoiceLink = linkData.url || linkData.link || null;
+        console.log("Payment link created:", invoiceLink);
+      }
+    } catch (e) {
+      console.log("Could not generate secure link:", e.message);
+    }
+
+    // Fallback to CommerceNetwork portal link if API fails
+    if (!invoiceLink) {
+      invoiceLink = `https://connect.intuit.com/portal/app/CommerceNetwork/`;
+    }
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
