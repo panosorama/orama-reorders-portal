@@ -54,9 +54,10 @@ export default function CustomerReorder() {
 
   const handleMouseMove = (e) => {
     if (isDragging && imageZoom > 100) {
+      const zoomFactor = imageZoom / 100;
       const maxPan = (imageZoom - 100) * 0.5;
-      const newX = Math.max(-maxPan, Math.min(maxPan, e.clientX - dragStart.x));
-      const newY = Math.max(-maxPan, Math.min(maxPan, e.clientY - dragStart.y));
+      const newX = Math.max(-maxPan, Math.min(maxPan, (e.clientX - dragStart.x) / zoomFactor));
+      const newY = Math.max(-maxPan, Math.min(maxPan, (e.clientY - dragStart.y) / zoomFactor));
       setPanX(newX);
       setPanY(newY);
     }
