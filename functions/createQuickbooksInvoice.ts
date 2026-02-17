@@ -110,7 +110,13 @@ Deno.serve(async (req) => {
     );
     
     const fullInvoice = await fullInvoiceResponse.json();
-    const invoiceLink = fullInvoice.Invoice?.InvoiceLink || `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`;
+    const invoiceLink = fullInvoice.Invoice?.InvoiceLink;
+    
+    console.log("Full invoice response:", { 
+      hasInvoiceLink: !!invoiceLink, 
+      invoiceLink,
+      invoiceId 
+    });
 
     // Update order with invoice ID (keep status as available for reuse)
     await base44.asServiceRole.entities.Order.update(order_id, {
@@ -121,7 +127,7 @@ Deno.serve(async (req) => {
       success: true,
       invoice_id: invoiceId,
       invoice_number: invoiceNumber,
-      invoice_link: invoiceLink
+      invoice_link: invoiceLink || `https://app.qbo.intuit.com/app/invoice?txnId=${invoiceId}`
     });
 
   } catch (error) {
