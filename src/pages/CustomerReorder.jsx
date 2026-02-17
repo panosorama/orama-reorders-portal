@@ -90,8 +90,23 @@ export default function CustomerReorder() {
       }
 
       if (qbResponse.success && qbResponse.invoice_link) {
-        // Create Monday.com item
-        await base44.functions.invoke('createMondayItem', {
+        const shippingInfo = selectedOrder.shipping_method === "office_pickup" 
+          ? "Office Pickup" 
+          : `Blind Ship${selectedOrder.ship_to_address ? ` - Ship to: ${selectedOrder.ship_to_address}` : ''}`;
+
+        // Send email notification (fire-and-forget to not block the flow)
+        base44.functions.invoke('sendOrderNotifications', {
+          customer_name: customer.customer_name,
+          company_name: customer.company_name,
+          product_type: selectedOrder.product_type,
+          pricing: selectedOrder.pricing,
+          shipping_info: shippingInfo,
+          invoice_number: qbResponse.invoice_id,
+          mockup_url: selectedOrder.mockup_url
+        }).catch(err => console.error("Email notification failed:", err));
+
+        // Create Monday.com item (fire-and-forget)
+        base44.functions.invoke('createMondayItem', {
           order_id: selectedOrder.id,
           customer_name: customer.customer_name,
           company_name: customer.company_name,
@@ -99,22 +114,7 @@ export default function CustomerReorder() {
           specifications: selectedOrder.specifications,
           pricing: selectedOrder.pricing,
           mockup_url: selectedOrder.mockup_url
-        });
-
-        // Send email to internal team via backend
-        const shippingInfo = selectedOrder.shipping_method === "office_pickup" 
-          ? "Office Pickup" 
-          : `Blind Ship${selectedOrder.ship_to_address ? ` - Ship to: ${selectedOrder.ship_to_address}` : ''}`;
-
-        await base44.functions.invoke('sendOrderNotifications', {
-          customer_name: customer.customer_name,
-          company_name: customer.company_name,
-          product_type: selectedOrder.product_type,
-          pricing: selectedOrder.pricing,
-          shipping_info: shippingInfo,
-          invoice_number: qbResponse.invoice_number,
-          mockup_url: selectedOrder.mockup_url
-        });
+        }).catch(err => console.error("Monday.com creation failed:", err));
 
         toast.success("Order approved! Redirecting to payment...");
 
