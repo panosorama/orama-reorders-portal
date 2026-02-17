@@ -2,17 +2,42 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = await req.json();
+    // 1. INPUT VALIDATION
+    if (req.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
+    }
+    
+    // Parse body safely
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    // 1. Setup Credentials
+    const { order_id, quickbooks_customer_id, product_type, specifications, pricing } = body;
+
+    // 2. ENV VAR CHECK (Common cause of 500 errors)
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
     const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
     const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
-    const baseUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}`;
 
-    // 2. Get Access Token
+    const missingVars = [];
+    if (!clientId) missingVars.push('QUICKBOOKS_CLIENT_ID');
+    if (!clientSecret) missingVars.push('QUICKBOOKS_CLIENT_SECRET');
+    if (!refreshToken) missingVars.push('QUICKBOOKS_REFRESH_TOKEN');
+    if (!realmId) missingVars.push('QUICKBOOKS_REALM_ID');
+
+    if (missingVars.length > 0) {
+      console.error("Missing Environment Variables:", missingVars);
+      return Response.json({ 
+        success: false, 
+        error: `Server Configuration Error: Missing ${missingVars.join(', ')}` 
+      }, { status: 500 });
+    }
+
+    // 3. GET ACCESS TOKEN
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -27,48 +52,52 @@ Deno.serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
-    if (!tokenResponse.ok) throw new Error(tokenData.error_description || 'Failed to get access token');
-    const accessToken = tokenData.access_token;
+    if (!tokenResponse.ok) {
+      console.error("Token Error:", tokenData);
+      throw new Error(`Auth Failed: ${tokenData.error_description || tokenData.error}`);
+    }
     
+    const accessToken = tokenData.access_token;
+    const baseUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}`;
     const apiHeaders = {
       'Authorization': `Bearer ${accessToken}`,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     };
 
-    // 3. PRE-WORK: Fetch Customer Email AND Last Invoice Number (in parallel for speed)
+    // 4. PARALLEL FETCH: Customer & Last Invoice
     const [customerResponse, lastInvoiceResponse] = await Promise.all([
-      // A. Get Customer to find their Email
       fetch(`${baseUrl}/customer/${quickbooks_customer_id}?minorversion=65`, { headers: apiHeaders }),
-      // B. Query Last Invoice to calculate next DocNumber manually
       fetch(`${baseUrl}/query?query=SELECT DocNumber FROM Invoice ORDERBY MetaData.CreateTime DESC MAXRESULTS 1&minorversion=65`, { headers: apiHeaders })
     ]);
 
-    // Process Customer Email
+    // Handle Customer Email
     const customerData = await customerResponse.json();
-    // Default to a placeholder if missing, or the link WON'T generate.
-    const customerEmail = customerData.Customer?.PrimaryEmailAddr?.Address || "noreply@placeholder.com";
+    const customerEmail = customerData.Customer?.PrimaryEmailAddr?.Address;
+    
+    // Safety check: We cannot generate a link without an email
+    const emailToUse = customerEmail || "placeholder@example.com"; 
 
-    // Process Invoice Number
+    // Handle Invoice Numbering
     const lastInvoiceData = await lastInvoiceResponse.json();
-    let nextDocNumber = "1001"; // Default start
+    let nextDocNumber = "1001"; // Default for brand new account
+    
     if (lastInvoiceData.QueryResponse?.Invoice?.length > 0) {
       const lastDocNum = lastInvoiceData.QueryResponse.Invoice[0].DocNumber;
-      // Extract number and increment (handle potential non-numeric prefixes if needed)
+      // Safely extract number, ignoring "INV-" prefixes if they exist
       const numericPart = parseInt(lastDocNum.replace(/\D/g, '')); 
       if (!isNaN(numericPart)) {
         nextDocNumber = (numericPart + 1).toString();
       }
     }
 
-    // 4. Create Invoice (With Email, Payment Flags, AND Explicit DocNumber)
+    // 5. CREATE INVOICE
     const invoiceData = {
-      DocNumber: nextDocNumber, // Explicitly set the number
+      DocNumber: nextDocNumber,
       CustomerRef: { value: quickbooks_customer_id },
-      BillEmail: { Address: customerEmail }, // REQUIRED for Link Generation
-      // REQUIRED: These flags trigger the payment link creation
-      AllowOnlineCreditCardPayment: true, 
-      AllowOnlineACHPayment: true,
+      BillEmail: { Address: emailToUse }, // Critical for Link
+      AllowOnlineCreditCardPayment: true, // Critical for Link
+      AllowOnlineACHPayment: true,        // Critical for Link
       Line: [{
         Amount: pricing,
         DetailType: "SalesItemLineDetail",
@@ -82,7 +111,6 @@ Deno.serve(async (req) => {
       SalesTermRef: { value: "1" }
     };
 
-    // Note: We use ?include=invoiceLink to ensure it returns in the response
     const createInvoiceRes = await fetch(
       `${baseUrl}/invoice?minorversion=65&include=invoiceLink`, 
       {
@@ -95,31 +123,39 @@ Deno.serve(async (req) => {
     const invoiceResult = await createInvoiceRes.json();
 
     if (!createInvoiceRes.ok) {
-      console.error("QB Error:", invoiceResult);
+      console.error("Create Invoice Failed:", JSON.stringify(invoiceResult, null, 2));
       throw new Error(invoiceResult.Fault?.Error?.[0]?.Message || 'Failed to create invoice');
     }
 
-    // 5. Extract Data
     const createdInvoice = invoiceResult.Invoice;
-    const finalInvoiceId = createdInvoice.Id;
-    const finalInvoiceNumber = createdInvoice.DocNumber;
-    // The link should now be directly in the response because of our flags + query param
-    const finalInvoiceLink = createdInvoice.InvoiceLink || `https://connect.intuit.com/portal/app/CommerceNetwork/view/scs-v1-missing`;
-
-    // 6. Update Base44 Record
-    await base44.asServiceRole.entities.Order.update(order_id, {
-      quickbooks_invoice_id: finalInvoiceId
-    });
+    
+    // 6. UPDATE DATABASE (Base44)
+    // Only try this if base44 was initialized successfully
+    try {
+      const base44 = createClientFromRequest(req);
+      if (base44) {
+        await base44.asServiceRole.entities.Order.update(order_id, {
+          quickbooks_invoice_id: createdInvoice.Id
+        });
+      }
+    } catch (dbError) {
+      console.warn("Base44 update failed, but invoice was created:", dbError);
+    }
 
     return Response.json({
       success: true,
-      invoice_id: finalInvoiceId,
-      invoice_number: finalInvoiceNumber,
-      invoice_link: finalInvoiceLink
+      invoice_id: createdInvoice.Id,
+      invoice_number: createdInvoice.DocNumber,
+      invoice_link: createdInvoice.InvoiceLink || "Link not generated by QB"
     });
 
   } catch (error) {
-    console.error("Script Error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("CRITICAL SCRIPT ERROR:", error);
+    // Return a 500 with JSON body so the frontend can read the error message
+    return Response.json({ 
+      success: false, 
+      error: error.message, 
+      stack: error.stack 
+    }, { status: 500 });
   }
 });
