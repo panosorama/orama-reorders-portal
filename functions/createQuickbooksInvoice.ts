@@ -76,31 +76,39 @@ Deno.serve(async (req) => {
       const lines = [];
       
       // Main product line
-      lines.push({
+      const productLine = {
         Amount: pricing,
         DetailType: "SalesItemLineDetail",
         Description: `${product_type}\n${specifications}`,
         SalesItemLineDetail: { 
           Qty: quantity || 1, 
-          UnitPrice: pricing / (quantity || 1),
-          ServiceDate: new Date().toISOString().split('T')[0],
-          ItemRef: { value: "1", name: "Printing" }
+          UnitPrice: pricing / (quantity || 1)
         }
-      });
+      };
+      
+      // Mark as taxable if not tax exempt
+      if (!is_tax_exempt) {
+        productLine.SalesItemLineDetail.TaxCodeRef = { value: "1" };
+      }
+      lines.push(productLine);
 
       // Shipping line if applicable
       if (shipping_charge && shipping_charge > 0) {
-        lines.push({
+        const shippingLine = {
           Amount: shipping_charge,
           DetailType: "SalesItemLineDetail",
           Description: "Shipping",
           SalesItemLineDetail: {
             Qty: 1,
-            UnitPrice: shipping_charge,
-            ServiceDate: new Date().toISOString().split('T')[0],
-            ItemRef: { value: "2", name: "Shipping" }
+            UnitPrice: shipping_charge
           }
-        });
+        };
+        
+        // Shipping is typically taxable too
+        if (!is_tax_exempt) {
+          shippingLine.SalesItemLineDetail.TaxCodeRef = { value: "1" };
+        }
+        lines.push(shippingLine);
       }
 
       const invoicePayload = {
