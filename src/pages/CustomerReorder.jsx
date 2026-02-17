@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Loader2, ZoomIn, ZoomOut } from "lucide-react";
+import { CheckCircle, Loader2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CustomerReorder() {
@@ -256,6 +256,18 @@ export default function CustomerReorder() {
                            disabled={imageZoom === 300}
                          >
                            <ZoomIn className="w-4 h-4" />
+                         </Button>
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => {
+                             setImageZoom(100);
+                             setPanX(0);
+                             setPanY(0);
+                           }}
+                           title="Reset view"
+                         >
+                           <RotateCcw className="w-4 h-4" />
                          </Button>
                        </div>
                      )}
