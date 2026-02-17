@@ -55,12 +55,22 @@ export default function AdminDashboard() {
     queryFn: () => base44.entities.Customer.list('-created_date')
   });
 
-  const { data: qbCustomers = [], isLoading: loadingQB, refetch: refetchQB } = useQuery({
+  const { data: qbCustomers = [], isLoading: loadingQB, refetch: refetchQB, error: qbError } = useQuery({
     queryKey: ['qbCustomers'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('getQuickbooksCustomers', {});
-      return response.data.customers || [];
-    }
+      try {
+        const response = await base44.functions.invoke('getQuickbooksCustomers', {});
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
+        return response.data.customers || [];
+      } catch (error) {
+        console.error("QB customers error:", error);
+        throw error;
+      }
+    },
+    retry: 2,
+    retryDelay: 1000
   });
 
   if (loadingUser || !user) {
@@ -396,6 +406,10 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2 p-2 text-sm text-slate-600">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Loading QuickBooks customers...
+                    </div>
+                  ) : qbError ? (
+                    <div className="p-2 text-sm text-red-600 bg-red-50 rounded">
+                      Failed to load customers. <button type="button" onClick={() => refetchQB()} className="underline font-semibold">Retry</button>
                     </div>
                   ) : (
                     <Popover open={qbOpen} onOpenChange={setQbOpen}>
