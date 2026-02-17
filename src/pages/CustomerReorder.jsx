@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle, Loader2, ZoomIn, ZoomOut } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export default function CustomerReorder() {
