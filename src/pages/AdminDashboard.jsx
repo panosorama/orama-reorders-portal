@@ -125,7 +125,13 @@ export default function AdminDashboard() {
     }
     
     try {
-      const response = await base44.functions.invoke('createQuickbooksCustomer', newQBCustomer);
+      // Auto-populate email from the customer form if empty
+      const qbCustomerData = {
+        ...newQBCustomer,
+        email: newQBCustomer.email || email
+      };
+      
+      const response = await base44.functions.invoke('createQuickbooksCustomer', qbCustomerData);
       
       if (response.data.success) {
         toast.success("QuickBooks customer created!");
