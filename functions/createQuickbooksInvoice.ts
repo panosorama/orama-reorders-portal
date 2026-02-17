@@ -104,11 +104,7 @@ Deno.serve(async (req) => {
     }
 
     const invoiceId = invoice.Invoice.Id;
-    let invoiceNumber = invoice.Invoice.DocNumber || invoice.Invoice.No;
-    
-    if (!invoiceNumber) {
-      invoiceNumber = invoice.Invoice.Id;
-    }
+    const invoiceNumber = invoice.Invoice.DocNumber;
 
     console.log("Invoice created successfully:", { invoiceId, invoiceNumber });
 
