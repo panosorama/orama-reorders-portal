@@ -124,7 +124,8 @@ export default function CustomerReorder() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="bg-white border-b border-slate-200">
+      <div className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-[#EF4444] to-[#f97316]" />
         <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/f4868db7a_Untitleddesign12.png"
