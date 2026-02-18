@@ -38,6 +38,7 @@ export default function AdminDashboard() {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteCustomer, setDeleteCustomer] = useState(null);
   const [copiedToken, setCopiedToken] = useState(null);
+  const [qbSettingsOpen, setQbSettingsOpen] = useState(false);
   const [shipToAddress, setShipToAddress] = useState("");
   const [isTaxExempt, setIsTaxExempt] = useState(false);
 
