@@ -214,6 +214,8 @@ export default function CustomerReorder() {
                 quantity={selectedOrder.quantity}
                 pricing={selectedOrder.pricing}
                 shippingCharge={selectedOrder.shipping_charge}
+                shippingMethod={selectedOrder.shipping_method}
+                shipToAddress={selectedOrder.ship_to_address || customer?.ship_to_address}
                 onApprove={handleApprove}
                 isProcessing={processing}
               />
