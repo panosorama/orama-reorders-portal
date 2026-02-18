@@ -205,7 +205,7 @@ export default function OrderPreview({ mockupUrl, productType, specifications, q
       <Button
         onClick={onApprove}
         disabled={isProcessing}
-        className="w-full bg-black hover:bg-gray-800 text-white h-10"
+        className="w-full bg-green-600 hover:bg-green-700 text-white h-10"
       >
         {isProcessing ? 'Processing...' : 'Approve & Pay'}
       </Button>
