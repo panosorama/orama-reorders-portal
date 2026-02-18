@@ -161,7 +161,7 @@ export default function OrderPreview({ mockupUrl, productType, specifications, q
             <p className="text-xs text-blue-700 mt-1">Qty: {quantity || 1}</p>
           </div>
 
-          {(shippingMethod === "blind_ship" || !shippingMethod) && onShipToAddressChange && (
+          {shippingMethod === "blind_ship" && onShipToAddressChange && (
             <div className="bg-white p-3 rounded-lg border border-slate-200">
               <p className="text-xs font-semibold text-slate-600 mb-1">📦 Ship To Address</p>
               <Input
