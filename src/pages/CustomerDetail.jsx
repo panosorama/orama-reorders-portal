@@ -182,33 +182,36 @@ export default function CustomerDetail() {
 
   if (!customer) return <div className="p-8">Loading...</div>;
 
+  const dialogOnOpenChange = (isOpen) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setEditingOrder(null);
+      setProductType("");
+      setSpecifications("");
+      setPricing("");
+      setQuantity("");
+      setShippingCharge("");
+      setMockupFile(null);
+      setSelectedQbCustomer(null);
+      setShippingMethod("blind_ship");
+      setCustomShipAddress("");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <PageHeader
         backTo="AdminDashboard"
         backLabel="Dashboard"
         actions={
-          <Dialog open={open} onOpenChange={(isOpen) => {
-            setOpen(isOpen);
-            if (!isOpen) {
-              setEditingOrder(null);
-              setProductType("");
-              setSpecifications("");
-              setPricing("");
-              setQuantity("");
-              setShippingCharge("");
-              setMockupFile(null);
-              setSelectedQbCustomer(null);
-              setShippingMethod("blind_ship");
-              setCustomShipAddress("");
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Order
-              </Button>
-            </DialogTrigger>
+          <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={() => setOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Order
+          </Button>
+        }
+      />
+
+      <Dialog open={open} onOpenChange={dialogOnOpenChange}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>{editingOrder ? "Edit Order" : "Add Previous Order"}</DialogTitle>
