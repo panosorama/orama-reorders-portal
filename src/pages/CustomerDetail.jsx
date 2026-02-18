@@ -237,18 +237,65 @@ export default function CustomerDetail() {
                     placeholder="Business Cards, Brochures, Menus, etc."
                   />
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="sizeColor">Size / Color Process</Label>
+                    <Input
+                      id="sizeColor"
+                      value={sizeColor}
+                      onChange={(e) => setSizeColor(e.target.value)}
+                      placeholder='3.5x2", Full Color'
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="quantity">Quantity</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      placeholder="500"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="sides">Sides</Label>
+                    <Input
+                      id="sides"
+                      value={sides}
+                      onChange={(e) => setSides(e.target.value)}
+                      placeholder="Front Only, Front & Back"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="fold">Fold</Label>
+                    <Input
+                      id="fold"
+                      value={fold}
+                      onChange={(e) => setFold(e.target.value)}
+                      placeholder="None, Half Fold, Tri-Fold"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="estProductionTime">Est. Production Time</Label>
+                    <Input
+                      id="estProductionTime"
+                      value={estProductionTime}
+                      onChange={(e) => setEstProductionTime(e.target.value)}
+                      placeholder="3-5 Business Days"
+                    />
+                  </div>
+                </div>
                 <div>
-                  <Label htmlFor="specifications">Specifications *</Label>
+                  <Label htmlFor="additionalNotes">Additional Notes</Label>
                   <Textarea
-                    id="specifications"
-                    value={specifications}
-                    onChange={(e) => setSpecifications(e.target.value)}
-                    required
-                    rows={6}
-                    placeholder="Size: 3.5x2&#10;Material: 16pt Cardstock&#10;Finish: Matte&#10;Quantity: 500&#10;Colors: Full Color Front, Black & White Back"
+                    id="additionalNotes"
+                    value={additionalNotes}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Any extra details or special instructions..."
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <div>
                    <Label htmlFor="pricing">Price (USD) *</Label>
                    <Input
@@ -259,16 +306,6 @@ export default function CustomerDetail() {
                      onChange={(e) => setPricing(e.target.value)}
                      required
                      placeholder="99.99"
-                   />
-                 </div>
-                 <div>
-                   <Label htmlFor="quantity">Quantity</Label>
-                   <Input
-                     id="quantity"
-                     type="number"
-                     value={quantity}
-                     onChange={(e) => setQuantity(e.target.value)}
-                     placeholder="500"
                    />
                  </div>
                  <div>
