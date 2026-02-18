@@ -477,7 +477,7 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredCustomers.map((customer) => (
-            <Card key={customer.id} className="hover:shadow-lg transition-all duration-300 border-slate-200">
+            <Card key={customer.id} className="hover:shadow-lg transition-all duration-300 border-slate-200 hover:border-red-200 group">
               <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                 <div className="flex-1">
                   <CardTitle className="text-base">{customer.customer_name}</CardTitle>
