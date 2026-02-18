@@ -207,7 +207,7 @@ export default function CustomerDetail() {
       />
 
       <Dialog open={open} onOpenChange={dialogOnOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingOrder ? "Edit Order" : "Add Previous Order"}</DialogTitle>
               </DialogHeader>
@@ -280,7 +280,7 @@ export default function CustomerDetail() {
                     placeholder="Size: 3.5x2&#10;Material: 16pt Cardstock&#10;Finish: Matte&#10;Quantity: 500&#10;Colors: Full Color Front, Black & White Back"
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                  <div>
                    <Label htmlFor="pricing">Price (USD) *</Label>
                    <Input
