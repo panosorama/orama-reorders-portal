@@ -480,7 +480,7 @@ export default function AdminDashboard() {
             <Card key={customer.id} className="hover:shadow-lg transition-all duration-300 border-slate-200 hover:border-red-200 group">
               <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                 <div className="flex-1">
-                  <CardTitle className="text-base">{customer.customer_name}</CardTitle>
+                  <CardTitle className="text-base group-hover:text-[#EF4444] transition-colors">{customer.customer_name}</CardTitle>
                   {customer.company_name && (
                     <p className="text-xs text-slate-600 mt-1">{customer.company_name}</p>
                   )}
