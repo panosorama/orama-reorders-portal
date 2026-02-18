@@ -156,11 +156,6 @@ export default function CustomerDetail() {
     }
   };
 
-  const filteredQbCustomers = qbCustomers.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (c.company && c.company.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
   if (!customer) return <div className="p-8">Loading...</div>;
 
   const dialogOnOpenChange = (isOpen) => {
