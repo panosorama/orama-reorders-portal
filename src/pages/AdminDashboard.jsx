@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const [customerName, setCustomerName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
-  const [lastCreatedQBCustomer, setLastCreatedQBCustomer] = useState(null);
+
   const [selectedQBCustomer, setSelectedQBCustomer] = useState("");
   const [qbOpen, setQbOpen] = useState(false);
   const [createQBOpen, setCreateQBOpen] = useState(false);
