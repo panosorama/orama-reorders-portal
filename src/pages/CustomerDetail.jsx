@@ -203,7 +203,7 @@ export default function CustomerDetail() {
     if (!isOpen) {
       setEditingOrder(null);
       setProductType("");
-      setSpecifications("");
+      resetSpecFields();
       setPricing("");
       setQuantity("");
       setShippingCharge("");
