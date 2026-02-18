@@ -216,6 +216,9 @@ export default function CustomerReorder() {
                 quantity={selectedOrder.quantity}
                 pricing={selectedOrder.pricing}
                 shippingCharge={selectedOrder.shipping_charge}
+                shippingMethod={selectedOrder.shipping_method}
+                shipToAddress={editableShipAddress}
+                onShipToAddressChange={setEditableShipAddress}
                 onApprove={handleApprove}
                 isProcessing={processing}
               />
