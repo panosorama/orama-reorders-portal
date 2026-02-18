@@ -456,7 +456,10 @@ export default function AdminDashboard() {
 
       <div className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
+            <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#EF4444] to-[#f97316] mt-1.5" />
+          </div>
           <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={() => setOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             New Customer
