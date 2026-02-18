@@ -158,7 +158,12 @@ export default function CustomerDetail() {
   const handleEditOrder = (order) => {
     setEditingOrder(order);
     setProductType(order.product_type);
-    setSpecifications(order.specifications);
+    const parsed = parseSpecifications(order.specifications);
+    setSizeColor(parsed.sizeColor);
+    setSides(parsed.sides);
+    setFold(parsed.fold);
+    setEstProductionTime(parsed.estProductionTime);
+    setAdditionalNotes(parsed.additionalNotes);
     setPricing(order.pricing.toString());
     setQuantity(order.quantity?.toString() || "");
     setShippingCharge(order.shipping_charge?.toString() || "");
