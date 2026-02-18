@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, ExternalLink, Copy, Loader2, Check, ChevronsUpDown, Trash2, Edit, Search, LogOut, CheckCircle2, MoreVertical } from "lucide-react";
+import { Plus, ExternalLink, Copy, Loader2, Check, ChevronsUpDown, Trash2, Edit, Search, LogOut, CheckCircle2, MoreVertical, Settings } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import QuickbooksSettingsDialog from "../components/QuickbooksSettingsDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
