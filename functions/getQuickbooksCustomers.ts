@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     
     // Return simplified customer list
     const customerList = customers.map(c => {
-      const addr = c.ShipAddr;
+      const addr = c.ShipAddr || c.BillAddr;
       let shipToAddress = null;
       if (addr) {
         const parts = [addr.Line1, addr.City, addr.CountrySubDivisionCode, addr.PostalCode].filter(Boolean);
