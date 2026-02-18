@@ -284,6 +284,7 @@ export default function AdminDashboard() {
       setSelectedQBCustomer("");
       setShipToAddress("");
       setIsTaxExempt(false);
+      skipResetRef.current = false;
     }
   };
 
