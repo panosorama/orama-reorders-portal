@@ -134,7 +134,7 @@ export default function CustomerReorder() {
           />
         </div>
         <div className="max-w-6xl mx-auto px-8 pb-6 pt-2">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {customer.customer_name}!</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, <span className="text-[#EF4444]">{customer.customer_name}</span>!</h1>
           {customer.company_name && (
             <p className="text-sm text-gray-500 mt-1">{customer.company_name}</p>
           )}
