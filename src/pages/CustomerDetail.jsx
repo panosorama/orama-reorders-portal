@@ -110,8 +110,6 @@ export default function CustomerDetail() {
       setQuantity("");
       setShippingCharge("");
       setMockupFile(null);
-      setSelectedQbCustomer(null);
-      setSearchQuery("");
       setShippingMethod("blind_ship");
       setCustomShipAddress("");
       refetch();
