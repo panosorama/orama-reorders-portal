@@ -142,50 +142,48 @@ export default function OrderPreview({ mockupUrl, productType, specifications, q
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PreviewContent />
 
-      {/* Product Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-          <h4 className="font-semibold mb-2 text-sm">Specifications:</h4>
-          <p className="text-sm text-slate-700 whitespace-pre-line max-h-40 overflow-y-auto">
-            {specifications}
-          </p>
+      {/* Order Summary Row */}
+      <div className="border border-slate-200 rounded-lg divide-y divide-slate-100">
+        <div className="flex justify-between items-center px-4 py-3">
+          <span className="text-sm font-medium text-slate-700">{productType}</span>
+          <span className="text-sm text-slate-500">Qty: {quantity || 1}</span>
         </div>
 
+        {specifications && (
+          <div className="px-4 py-3">
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Specifications</p>
+            <p className="text-sm text-slate-700 whitespace-pre-line">{specifications}</p>
+          </div>
+        )}
+
         {shippingMethod && (
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="px-4 py-3">
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Delivery</p>
             {shippingMethod === "office_pickup" ? (
-              <p className="text-blue-800 text-sm font-medium">📍 Office Pickup</p>
+              <p className="text-sm text-slate-700">📍 Office Pickup</p>
             ) : (
-              <p className="text-blue-800 text-sm font-medium">📦 Shipping to: {shipToAddress}</p>
+              <p className="text-sm text-slate-700">📦 Shipping to: {shipToAddress}</p>
             )}
           </div>
         )}
 
-        <div className="space-y-3">
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 font-medium">{productType}</p>
-            <p className="text-xs text-blue-700 mt-1">Qty: {quantity || 1}</p>
+        <div className="px-4 py-3 space-y-1">
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Subtotal</span>
+            <span>${pricing.toFixed(2)}</span>
           </div>
-
-          <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
+          {shippingCharge > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal:</span>
-              <span className="font-semibold">${pricing.toFixed(2)}</span>
+              <span className="text-slate-500">Shipping</span>
+              <span>${shippingCharge.toFixed(2)}</span>
             </div>
-            {shippingCharge && shippingCharge > 0 && (
-              <div className="flex justify-between text-sm pt-2 border-t border-slate-200">
-                <span className="text-gray-600">Shipping:</span>
-                <span className="font-semibold">${shippingCharge.toFixed(2)}</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-              <span className="font-semibold">Total:</span>
-              <span className="text-lg font-bold">${(pricing + (shippingCharge || 0)).toFixed(2)}</span>
-            </div>
-            <p className="text-xs text-gray-500 text-right">+ tax</p>
+          )}
+          <div className="flex justify-between text-sm font-semibold pt-1 border-t border-slate-100 mt-1">
+            <span>Total</span>
+            <span>${(pricing + (shippingCharge || 0)).toFixed(2)} <span className="font-normal text-slate-400 text-xs">+ tax</span></span>
           </div>
         </div>
       </div>
