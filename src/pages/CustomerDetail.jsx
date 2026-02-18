@@ -129,8 +129,6 @@ export default function CustomerDetail() {
     setShippingCharge(order.shipping_charge?.toString() || "");
     setShippingMethod(order.shipping_method || "blind_ship");
     setCustomShipAddress(order.ship_to_address || "");
-    const qbCustomer = qbCustomers.find(c => c.id === order.quickbooks_customer_id);
-    setSelectedQbCustomer(qbCustomer);
     setOpen(true);
   };
 
