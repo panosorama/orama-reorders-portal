@@ -360,7 +360,13 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-red-600">QuickBooks Customer * (Required)</Label>
-                    <Dialog open={createQBOpen} onOpenChange={setCreateQBOpen}>
+                    <Dialog open={createQBOpen} onOpenChange={(isOpen) => {
+                       if (!isOpen && skipResetRef.current) {
+                         skipResetRef.current = false;
+                         return;
+                       }
+                       setCreateQBOpen(isOpen);
+                     }}>
                       <DialogTrigger asChild>
                         <Button type="button" variant="outline" size="sm">
                           <Plus className="w-3 h-3 mr-1" />
