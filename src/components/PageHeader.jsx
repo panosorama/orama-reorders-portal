@@ -6,7 +6,8 @@ import { createPageUrl } from "../utils";
 
 export default function PageHeader({ backTo, backLabel, actions, onSignOut }) {
   return (
-    <div className="bg-white border-b border-slate-200">
+    <div className="bg-white border-b border-slate-200 shadow-sm">
+      <div className="h-1 bg-gradient-to-r from-[#EF4444] to-[#f97316]" />
       <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <img
