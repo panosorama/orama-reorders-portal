@@ -154,8 +154,21 @@ export default function OrderPreview({ mockupUrl, productType, specifications, q
 
         {specifications && (
           <div className="px-4 py-3">
-            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Specifications</p>
-            <p className="text-sm text-slate-700 whitespace-pre-line">{specifications}</p>
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Specifications</p>
+            <div className="space-y-1">
+              {specifications.split("\n").map((line, i) => {
+                const colonIdx = line.indexOf(": ");
+                if (colonIdx === -1) return <p key={i} className="text-sm text-slate-700">{line}</p>;
+                const label = line.substring(0, colonIdx);
+                const value = line.substring(colonIdx + 2);
+                return (
+                  <div key={i} className="flex gap-2 text-sm">
+                    <span className="text-slate-500 min-w-[140px]">{label}:</span>
+                    <span className="text-slate-700">{value}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
