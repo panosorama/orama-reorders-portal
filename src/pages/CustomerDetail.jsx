@@ -12,8 +12,7 @@ import PageHeader from "../components/PageHeader";
 
 import { createPageUrl } from "../utils";
 import { toast } from "sonner";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 export default function CustomerDetail() {
   const urlParams = new URLSearchParams(window.location.search);
