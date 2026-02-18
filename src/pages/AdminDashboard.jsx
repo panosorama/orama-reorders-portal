@@ -167,8 +167,8 @@ export default function AdminDashboard() {
     setForm((prev) => ({
       ...prev,
       selectedQBCustomer: qbCustomer.id,
-      customerName: prev.customerName || qbCustomer.name || "",
-      companyName: prev.companyName || qbCustomer.company || "",
+      customerName: qbCustomer.name || prev.customerName || "",
+      companyName: qbCustomer.company || prev.companyName || "",
     }));
     setQbOpen(false);
   };
