@@ -188,53 +188,6 @@ export default function CustomerDetail() {
               </DialogHeader>
               <form onSubmit={handleAddOrder} className="space-y-4">
                 <div>
-                  <Label>QuickBooks Customer *</Label>
-                  <Popover open={qbCustomerOpen} onOpenChange={setQbCustomerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between"
-                      >
-                        {selectedQbCustomer ? selectedQbCustomer.name : "Select customer..."}
-                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Search customers..." 
-                          value={searchQuery}
-                          onValueChange={setSearchQuery}
-                        />
-                        <CommandList>
-                          <CommandEmpty>
-                            {loadingQbCustomers ? "Loading..." : "No customers found."}
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {filteredQbCustomers.map((qbCustomer) => (
-                              <CommandItem
-                                key={qbCustomer.id}
-                                onSelect={() => {
-                                  setSelectedQbCustomer(qbCustomer);
-                                  setQbCustomerOpen(false);
-                                }}
-                              >
-                                <div>
-                                  <div className="font-medium">{qbCustomer.name}</div>
-                                  {qbCustomer.company && (
-                                    <div className="text-sm text-slate-500">{qbCustomer.company}</div>
-                                  )}
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
                   <Label htmlFor="productType">Product Type *</Label>
                   <Input
                     id="productType"
