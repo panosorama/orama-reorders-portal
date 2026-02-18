@@ -37,6 +37,7 @@ export default function CustomerReorder() {
 
   const handleReorder = (order) => {
     setSelectedOrder(order);
+    setEditableShipAddress(order.ship_to_address || customer?.ship_to_address || "");
   };
 
   const handleApprove = async () => {
