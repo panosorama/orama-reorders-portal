@@ -240,30 +240,33 @@ export default function AdminDashboard() {
     customer.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const dialogOnOpenChange = (isOpen) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setEditingCustomer(null);
+      setCustomerName("");
+      setCompanyName("");
+      setEmail("");
+      setSelectedQBCustomer("");
+      setShipToAddress("");
+      setIsTaxExempt(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <PageHeader
-          onSignOut={handleSignOut}
-          actions={
-            <Dialog open={open} onOpenChange={(isOpen) => {
-              setOpen(isOpen);
-              if (!isOpen) {
-                setEditingCustomer(null);
-                setCustomerName("");
-                setCompanyName("");
-                setEmail("");
-                setSelectedQBCustomer("");
-                setShipToAddress("");
-                setIsTaxExempt(false);
-              }
-            }}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Customer
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
+        onSignOut={handleSignOut}
+        actions={
+          <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={() => setOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Customer
+          </Button>
+        }
+      />
+
+      <Dialog open={open} onOpenChange={dialogOnOpenChange}>
+        <DialogContent>
                 <DialogHeader>
                   <DialogTitle>{editingCustomer ? "Edit Customer" : "Create New Customer"}</DialogTitle>
                 </DialogHeader>
