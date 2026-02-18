@@ -241,9 +241,8 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <PageHeader
+    <div className="min-h-screen bg-slate-50">
+      <PageHeader
           onSignOut={handleSignOut}
           actions={
             <Dialog open={open} onOpenChange={(isOpen) => {
