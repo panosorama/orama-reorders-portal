@@ -83,6 +83,28 @@ export default function AdminDashboard() {
     );
   }
 
+  if (user.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="max-w-md w-full mx-4 text-center">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-10">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader2 className="w-8 h-8 text-yellow-600" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Awaiting Approval</h1>
+            <p className="text-gray-500 text-sm mb-6">
+              Your account is pending admin approval. You'll be able to access the dashboard once an administrator approves your account.
+            </p>
+            <Button variant="outline" onClick={() => base44.auth.logout()}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const generateToken = () => {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
