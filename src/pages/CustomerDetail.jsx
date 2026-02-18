@@ -203,12 +203,7 @@ export default function CustomerDetail() {
       <PageHeader
         backTo="AdminDashboard"
         backLabel="Dashboard"
-        actions={
-          <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={() => setOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Order
-          </Button>
-        }
+        actions={null}
       />
 
       <Dialog open={open} onOpenChange={dialogOnOpenChange}>
