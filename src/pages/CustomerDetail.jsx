@@ -21,9 +21,13 @@ export default function CustomerDetail() {
   const [open, setOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [productType, setProductType] = useState("");
-  const [specifications, setSpecifications] = useState("");
-  const [pricing, setPricing] = useState("");
+  const [sizeColor, setSizeColor] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [sides, setSides] = useState("");
+  const [fold, setFold] = useState("");
+  const [estProductionTime, setEstProductionTime] = useState("");
+  const [additionalNotes, setAdditionalNotes] = useState("");
+  const [pricing, setPricing] = useState("");
   const [mockupFile, setMockupFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState("blind_ship");
