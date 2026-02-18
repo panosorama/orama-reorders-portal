@@ -170,7 +170,7 @@ export default function AdminDashboard() {
       customerName: qbCustomer.name || prev.customerName || "",
       companyName: qbCustomer.company || prev.companyName || "",
       email: qbCustomer.email || prev.email || "",
-      shipToAddress: qbCustomer.shipToAddress || prev.shipToAddress || "",
+      shipToAddress: qbCustomer.shipToAddress || "",
     }));
     setQbOpen(false);
   };
