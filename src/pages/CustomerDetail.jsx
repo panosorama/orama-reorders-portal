@@ -183,22 +183,11 @@ export default function CustomerDetail() {
   if (!customer) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <Link to={createPageUrl('AdminDashboard')}>
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </Link>
-
-        <div className="flex justify-between items-start mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">{customer.customer_name}</h1>
-            {customer.company_name && (
-              <p className="text-xl text-gray-600 mt-2">{customer.company_name}</p>
-            )}
-          </div>
+    <div className="min-h-screen bg-slate-50">
+      <PageHeader
+        backTo="AdminDashboard"
+        backLabel="Dashboard"
+        actions={
           <Dialog open={open} onOpenChange={(isOpen) => {
             setOpen(isOpen);
             if (!isOpen) {
