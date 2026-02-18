@@ -27,9 +27,6 @@ export default function CustomerDetail() {
   const [quantity, setQuantity] = useState("");
   const [mockupFile, setMockupFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [qbCustomerOpen, setQbCustomerOpen] = useState(false);
-  const [selectedQbCustomer, setSelectedQbCustomer] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [shippingMethod, setShippingMethod] = useState("blind_ship");
   const [customShipAddress, setCustomShipAddress] = useState("");
   const [shippingCharge, setShippingCharge] = useState("");
