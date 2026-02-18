@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut, RotateCcw, Maximize2, Copy } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 export default function OrderPreview({ mockupUrl, productType, specifications, quantity, pricing, shippingCharge, shippingMethod, shipToAddress, onShipToAddressChange, onApprove, isProcessing }) {
   const [zoom, setZoom] = useState(100);
