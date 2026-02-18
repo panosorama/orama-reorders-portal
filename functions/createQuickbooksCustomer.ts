@@ -74,7 +74,10 @@ Deno.serve(async (req) => {
       customer: {
         id: createData.Customer.Id,
         name: createData.Customer.DisplayName,
-        company: createData.Customer.CompanyName || null
+        company: createData.Customer.CompanyName || null,
+        email: createData.Customer.PrimaryEmailAddr?.Address || null,
+        givenName: createData.Customer.GivenName || null,
+        familyName: createData.Customer.FamilyName || null
       }
     });
 
