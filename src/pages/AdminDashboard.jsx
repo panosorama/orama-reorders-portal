@@ -452,11 +452,9 @@ export default function AdminDashboard() {
                 <Button type="submit" className="w-full" disabled={loadingQB || !selectedQBCustomer}>
                   {editingCustomer ? "Update Customer" : "Create Customer"}
                 </Button>
-                </form>
-                </DialogContent>
-                </Dialog>
-          }
-        />
+              </form>
+            </DialogContent>
+          </Dialog>
 
       <div className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-6">
