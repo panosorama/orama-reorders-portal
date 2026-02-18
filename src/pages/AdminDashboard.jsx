@@ -472,6 +472,9 @@ export default function AdminDashboard() {
                                   onSelect={() => {
                                     setSelectedQBCustomer(qbCustomer.id);
                                     setQbOpen(false);
+                                    // Auto-fill name/company fields if they're empty
+                                    if (!customerName) setCustomerName(qbCustomer.name || "");
+                                    if (!companyName) setCompanyName(qbCustomer.company || "");
                                   }}
                                 >
                                   <Check
