@@ -176,10 +176,7 @@ export default function AdminDashboard() {
       if (response.data.success) {
         toast.success("QuickBooks customer created!");
         const created = response.data.customer;
-        // Auto-populate customer form fields from QB data
-        setCustomerName(prev => prev || created.name || "");
-        setCompanyName(prev => prev || created.company || "");
-        setEmail(prev => prev || created.email || "");
+        setLastCreatedQBCustomer(created);
         setNewQBCustomer({
           displayName: "",
           companyName: "",
