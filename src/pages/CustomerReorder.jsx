@@ -166,7 +166,10 @@ export default function CustomerReorder() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-xs text-gray-600 line-clamp-2">
-                    {order.specifications}
+                    {order.specifications?.split("\n").map(line => {
+                      const colonIdx = line.indexOf(": ");
+                      return colonIdx !== -1 ? line.substring(colonIdx + 2) : line;
+                    }).filter(Boolean).join(" · ")}
                   </p>
                   <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                     <span className="text-lg font-bold text-[#EF4444]">
