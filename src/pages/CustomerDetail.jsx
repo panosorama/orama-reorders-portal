@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff, Search } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 
 import { createPageUrl } from "../utils";
@@ -33,6 +33,7 @@ export default function CustomerDetail() {
   const [shippingMethod, setShippingMethod] = useState("blind_ship");
   const [customShipAddress, setCustomShipAddress] = useState("");
   const [shippingCharge, setShippingCharge] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ['currentUser'],
@@ -213,6 +214,13 @@ export default function CustomerDetail() {
     }
   };
 
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.product_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.specifications?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.pricing.toString().includes(searchQuery)
+  );
+
   return (
     <div className="min-h-screen">
       <PageHeader
@@ -389,8 +397,20 @@ export default function CustomerDetail() {
           </Button>
         </div>
 
+        <div className="mb-6">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 bg-white border-slate-200 rounded-full text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-red-400"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
-           {orders.map((order) => (
+           {filteredOrders.map((order) => (
              <Card key={order.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
                <CardHeader>
                  <CardTitle className="text-lg">{order.product_type}</CardTitle>
@@ -466,6 +486,11 @@ export default function CustomerDetail() {
         {orders.length === 0 && (
           <div className="text-center py-16">
             <p className="text-slate-500 text-lg">No orders yet. Add previous orders for this customer.</p>
+          </div>
+        )}
+        {orders.length > 0 && filteredOrders.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-slate-500 text-lg">No orders match your search.</p>
           </div>
         )}
       </div>
