@@ -381,6 +381,7 @@ export default function CustomerDetail() {
             {customer.company_name && (
               <p className="text-base text-gray-500 mt-1">{customer.company_name}</p>
             )}
+            <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#EF4444] to-[#f97316] mt-1.5" />
           </div>
           <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={() => setOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
