@@ -452,8 +452,13 @@ export default function AdminDashboard() {
                 </form>
                 </DialogContent>
                 </Dialog>
-                </div>
-                </div>
+          }
+        />
+
+      <div className="max-w-6xl mx-auto px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
+        </div>
 
         <div className="mb-6">
           <div className="relative">
