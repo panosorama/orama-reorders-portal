@@ -58,13 +58,7 @@ export default function CustomerDetail() {
     enabled: !!customerId
   });
 
-  const { data: qbCustomers = [], isLoading: loadingQbCustomers } = useQuery({
-    queryKey: ['qb-customers'],
-    queryFn: async () => {
-      const { data } = await base44.functions.invoke('getQuickbooksCustomers');
-      return data.customers || [];
-    }
-  });
+
 
   if (loadingUser || !user) {
     return (
