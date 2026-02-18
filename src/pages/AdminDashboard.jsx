@@ -520,30 +520,23 @@ export default function AdminDashboard() {
                      Manage Reorders
                    </Button>
                  </Link>
-                 <div className="flex gap-1">
-                   <Button
-                     variant="secondary"
-                     className="flex-1 h-8 text-xs"
-                     onClick={() => copyLink(customer.unique_token)}
-                   >
-                     {copiedToken === customer.unique_token ? (
-                       <>
-                         <Check className="w-3 h-3 mr-1 text-green-600" />
-                         Copied!
-                       </>
-                     ) : (
-                       <>
-                         <Copy className="w-3 h-3 mr-1" />
-                         Copy Link
-                       </>
-                     )}
-                   </Button>
-                   <a href={createPageUrl(`CustomerReorder?token=${customer.unique_token}`)} target="_blank" rel="noreferrer">
-                     <Button variant="outline" size="icon" className="h-8 w-8 text-blue-600 border-blue-200 hover:bg-blue-50" title="Preview Portal">
-                       <ExternalLink className="w-3 h-3" />
-                     </Button>
-                   </a>
-                 </div>
+                 <Button
+                   variant="secondary"
+                   className="w-full h-8 text-xs"
+                   onClick={() => copyLink(customer.unique_token)}
+                 >
+                   {copiedToken === customer.unique_token ? (
+                     <>
+                       <Check className="w-3 h-3 mr-1 text-green-600" />
+                       Copied!
+                     </>
+                   ) : (
+                     <>
+                       <Copy className="w-3 h-3 mr-1" />
+                       Copy Link
+                     </>
+                   )}
+                 </Button>
                </CardContent>
              </Card>
            ))}

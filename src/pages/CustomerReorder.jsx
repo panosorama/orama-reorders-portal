@@ -14,7 +14,6 @@ export default function CustomerReorder() {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [editableShipAddress, setEditableShipAddress] = useState("");
 
   const { data: customer } = useQuery({
     queryKey: ['customer-by-token', token],
@@ -37,7 +36,6 @@ export default function CustomerReorder() {
 
   const handleReorder = (order) => {
     setSelectedOrder(order);
-    setEditableShipAddress(order.ship_to_address || customer?.ship_to_address || "");
   };
 
   const handleApprove = async () => {
@@ -53,7 +51,7 @@ export default function CustomerReorder() {
         quantity: selectedOrder.quantity || 1,
         shipping_charge: selectedOrder.shipping_charge || 0,
         is_tax_exempt: customer.is_tax_exempt || false,
-        ship_to_address: editableShipAddress || customer.ship_to_address || ""
+        ship_to_address: selectedOrder.ship_to_address || customer.ship_to_address || ""
       });
 
       console.log("QB Response:", qbResponse);
@@ -216,9 +214,6 @@ export default function CustomerReorder() {
                 quantity={selectedOrder.quantity}
                 pricing={selectedOrder.pricing}
                 shippingCharge={selectedOrder.shipping_charge}
-                shippingMethod={selectedOrder.shipping_method}
-                shipToAddress={editableShipAddress}
-                onShipToAddressChange={setEditableShipAddress}
                 onApprove={handleApprove}
                 isProcessing={processing}
               />

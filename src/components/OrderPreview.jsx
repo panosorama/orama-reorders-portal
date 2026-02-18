@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2, Copy } from "lucide-react";
 
-export default function OrderPreview({ mockupUrl, productType, specifications, quantity, pricing, shippingCharge, shippingMethod, shipToAddress, onShipToAddressChange, onApprove, isProcessing }) {
+export default function OrderPreview({ mockupUrl, productType, specifications, quantity, pricing, shippingCharge, onApprove, isProcessing }) {
   const [zoom, setZoom] = useState(100);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
@@ -160,24 +159,6 @@ export default function OrderPreview({ mockupUrl, productType, specifications, q
             <p className="text-sm text-blue-800 font-medium">{productType}</p>
             <p className="text-xs text-blue-700 mt-1">Qty: {quantity || 1}</p>
           </div>
-
-          {shippingMethod === "blind_ship" && onShipToAddressChange && (
-            <div className="bg-white p-3 rounded-lg border border-slate-200">
-              <p className="text-xs font-semibold text-slate-600 mb-1">📦 Ship To Address</p>
-              <Input
-                value={shipToAddress || ""}
-                onChange={(e) => onShipToAddressChange(e.target.value)}
-                placeholder="Enter shipping address..."
-                className="text-sm"
-              />
-              <p className="text-xs text-slate-400 mt-1">You can update this before approving</p>
-            </div>
-          )}
-          {shippingMethod === "office_pickup" && (
-            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-              <p className="text-sm text-green-800 font-medium">📍 Office Pickup</p>
-            </div>
-          )}
 
           <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
             <div className="flex justify-between text-sm">
