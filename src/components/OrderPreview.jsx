@@ -154,6 +154,21 @@ export default function OrderPreview({ mockupUrl, productType, specifications, q
           </p>
         </div>
 
+        {shippingMethod && (
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+            {shippingMethod === "office_pickup" ? (
+              <p className="text-blue-800 text-sm font-medium">📍 Office Pickup</p>
+            ) : (
+              <>
+                <p className="text-blue-800 text-sm font-medium">📦 Blind Ship</p>
+                {shipToAddress && (
+                  <p className="text-blue-700 text-xs mt-1">Ship to: {shipToAddress}</p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         <div className="space-y-3">
           <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800 font-medium">{productType}</p>
