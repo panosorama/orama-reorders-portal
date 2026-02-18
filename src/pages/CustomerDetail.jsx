@@ -140,7 +140,7 @@ export default function CustomerDetail() {
       setOpen(false);
       setEditingOrder(null);
       setProductType("");
-      setSpecifications("");
+      resetSpecFields();
       setPricing("");
       setQuantity("");
       setShippingCharge("");
