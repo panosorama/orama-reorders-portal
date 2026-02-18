@@ -148,32 +148,32 @@ export default function CustomerReorder() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your Previous Orders</h2>
             <p className="text-gray-600">Select any item to place a new order</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {orders.map((order) => (
-              <Card key={order.id} onClick={() => handleReorder(order)} className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-white border-slate-200 overflow-hidden">
-                <div className="relative bg-gray-100 h-40 overflow-hidden flex items-center justify-center">
-                   {order.mockup_url && (
-                     <img
-                       src={order.mockup_url}
-                       alt={order.product_type}
-                       className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                     />
-                   )}
-                 </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+             {orders.map((order) => (
+               <Card key={order.id} onClick={() => handleReorder(order)} className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-white border-slate-200 overflow-hidden h-full flex flex-col">
+                 <div className="relative bg-gray-100 h-64 overflow-hidden flex items-center justify-center">
+                    {order.mockup_url && (
+                      <img
+                        src={order.mockup_url}
+                        alt={order.product_type}
+                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                  </div>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base group-hover:text-[#EF4444] transition-colors duration-300 line-clamp-2">
+                  <CardTitle className="text-lg group-hover:text-[#EF4444] transition-colors duration-300 line-clamp-2">
                     {order.product_type}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 flex-1 flex flex-col">
                   <p className="text-xs text-gray-600 line-clamp-2">
                     {order.specifications?.split("\n").map(line => {
                       const colonIdx = line.indexOf(": ");
                       return colonIdx !== -1 ? line.substring(colonIdx + 2) : line;
                     }).filter(Boolean).join(" · ")}
                   </p>
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                    <span className="text-lg font-bold text-[#EF4444]">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 mt-auto">
+                    <span className="text-xl font-bold text-[#EF4444]">
                       ${order.pricing.toFixed(2)}
                     </span>
                     <Button 
@@ -181,7 +181,7 @@ export default function CustomerReorder() {
                         e.stopPropagation();
                         handleReorder(order);
                       }}
-                      className="bg-[#EF4444] hover:bg-[#DC2626] text-white h-8 text-xs"
+                      className="bg-[#EF4444] hover:bg-[#DC2626] text-white h-9 text-sm"
                     >
                       Reorder
                     </Button>
