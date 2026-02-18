@@ -281,8 +281,14 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-50">
       <PageHeader
         onSignOut={handleSignOut}
-        actions={null}
+        actions={
+          <Button variant="outline" size="sm" onClick={() => setQbSettingsOpen(true)} className="gap-2">
+            <Settings className="w-4 h-4" />
+            QB Settings
+          </Button>
+        }
       />
+      <QuickbooksSettingsDialog open={qbSettingsOpen} onOpenChange={setQbSettingsOpen} />
 
       <Dialog open={open} onOpenChange={dialogOnOpenChange}>
         <DialogContent>
