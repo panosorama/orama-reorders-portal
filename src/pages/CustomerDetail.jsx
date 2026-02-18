@@ -71,6 +71,38 @@ export default function CustomerDetail() {
     );
   }
 
+  const buildSpecifications = () => {
+    const parts = [];
+    if (sizeColor) parts.push(`Size/Color Process: ${sizeColor}`);
+    if (sides) parts.push(`Sides: ${sides}`);
+    if (fold) parts.push(`Fold: ${fold}`);
+    if (estProductionTime) parts.push(`Est. Production Time: ${estProductionTime}`);
+    if (additionalNotes) parts.push(`Additional Notes: ${additionalNotes}`);
+    return parts.join("\n");
+  };
+
+  const parseSpecifications = (specs) => {
+    const fields = { sizeColor: "", sides: "", fold: "", estProductionTime: "", additionalNotes: "" };
+    if (!specs) return fields;
+    const lines = specs.split("\n");
+    lines.forEach(line => {
+      if (line.startsWith("Size/Color Process: ")) fields.sizeColor = line.replace("Size/Color Process: ", "");
+      else if (line.startsWith("Sides: ")) fields.sides = line.replace("Sides: ", "");
+      else if (line.startsWith("Fold: ")) fields.fold = line.replace("Fold: ", "");
+      else if (line.startsWith("Est. Production Time: ")) fields.estProductionTime = line.replace("Est. Production Time: ", "");
+      else if (line.startsWith("Additional Notes: ")) fields.additionalNotes = line.replace("Additional Notes: ", "");
+    });
+    return fields;
+  };
+
+  const resetSpecFields = () => {
+    setSizeColor("");
+    setSides("");
+    setFold("");
+    setEstProductionTime("");
+    setAdditionalNotes("");
+  };
+
   const handleAddOrder = async (e) => {
     e.preventDefault();
     setUploading(true);
@@ -85,7 +117,7 @@ export default function CustomerDetail() {
       const orderData = {
         customer_id: customerId,
         product_type: productType,
-        specifications: specifications,
+        specifications: buildSpecifications(),
         pricing: parseFloat(pricing),
         quantity: quantity ? parseFloat(quantity) : null,
         shipping_charge: shippingCharge ? parseFloat(shippingCharge) : 0,
