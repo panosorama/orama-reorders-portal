@@ -43,15 +43,6 @@ export default function AdminDashboard() {
   const [shipToAddress, setShipToAddress] = useState("");
   const [isTaxExempt, setIsTaxExempt] = useState(false);
 
-  useEffect(() => {
-    if (lastCreatedQBCustomer && !createQBOpen) {
-      if (!customerName) setCustomerName(lastCreatedQBCustomer.name || "");
-      if (!companyName) setCompanyName(lastCreatedQBCustomer.company || "");
-      if (!email) setEmail(lastCreatedQBCustomer.email || "");
-      setLastCreatedQBCustomer(null);
-    }
-  }, [createQBOpen, lastCreatedQBCustomer]);
-
   const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
