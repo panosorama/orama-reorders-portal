@@ -124,22 +124,20 @@ export default function CustomerReorder() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="bg-white shadow border-b">
-        <div className="max-w-6xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between mb-8">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/f4868db7a_Untitleddesign12.png" 
-              alt="Orama Business Solutions"
-              className="h-16 w-auto object-contain"
-            />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">Welcome back, {customer.customer_name}!</h1>
-            {customer.company_name && (
-              <p className="text-lg text-gray-600 mt-2">{customer.company_name}</p>
-            )}
-            <p className="text-gray-500 mt-3">Browse your previous orders and reorder in just a few clicks</p>
-          </div>
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/f4868db7a_Untitleddesign12.png"
+            alt="Orama Business Solutions"
+            className="h-10 w-auto object-contain"
+          />
+        </div>
+        <div className="max-w-6xl mx-auto px-8 pb-6 pt-2">
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {customer.customer_name}!</h1>
+          {customer.company_name && (
+            <p className="text-sm text-gray-500 mt-1">{customer.company_name}</p>
+          )}
+          <p className="text-sm text-gray-400 mt-1">Browse your previous orders and reorder in just a few clicks</p>
         </div>
       </div>
 
