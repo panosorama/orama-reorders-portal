@@ -169,6 +169,8 @@ export default function AdminDashboard() {
       selectedQBCustomer: qbCustomer.id,
       customerName: qbCustomer.name || prev.customerName || "",
       companyName: qbCustomer.company || prev.companyName || "",
+      email: qbCustomer.email || prev.email || "",
+      shipToAddress: qbCustomer.shipToAddress || prev.shipToAddress || "",
     }));
     setQbOpen(false);
   };
