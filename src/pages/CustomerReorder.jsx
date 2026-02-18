@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import OrderPreview from "../components/OrderPreview";
 
@@ -14,6 +15,7 @@ export default function CustomerReorder() {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: customer } = useQuery({
     queryKey: ['customer-by-token', token],
@@ -143,13 +145,28 @@ export default function CustomerReorder() {
       </div>
 
       <div className="max-w-6xl mx-auto px-8 py-16">
-        <div>
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your Previous Orders</h2>
-            <p className="text-gray-600">Select any item to place a new order</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
-             {orders.map((order) => (
+         <div>
+           <div className="mb-12">
+             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your Previous Orders</h2>
+             <p className="text-gray-600">Select any item to place a new order</p>
+           </div>
+           <div className="mb-6">
+             <div className="relative max-w-sm">
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+               <Input
+                 placeholder="Search orders..."
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="pl-9 h-9 bg-white border-slate-200 rounded-full text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-red-400"
+               />
+             </div>
+           </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+             {orders.filter(order =>
+               order.product_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               order.specifications?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               order.pricing.toString().includes(searchQuery)
+             ).map((order) => (
                <Card key={order.id} onClick={() => handleReorder(order)} className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-white border-slate-200 overflow-hidden h-full flex flex-col">
                  <div className="relative bg-gray-100 h-64 overflow-hidden flex items-center justify-center">
                     {order.mockup_url && (
@@ -195,6 +212,15 @@ export default function CustomerReorder() {
         {orders.length === 0 && (
           <div className="text-center py-16">
             <p className="text-slate-500 text-lg">No items available for reorder at this time.</p>
+          </div>
+        )}
+        {orders.length > 0 && orders.filter(order =>
+          order.product_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.specifications?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.pricing.toString().includes(searchQuery)
+        ).length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-slate-500 text-lg">No orders match your search.</p>
           </div>
         )}
       </div>
