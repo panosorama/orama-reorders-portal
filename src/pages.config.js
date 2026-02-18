@@ -47,14 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import AdminDashboard from './pages/AdminDashboard';
 import CustomerDetail from './pages/CustomerDetail';
+import AdminDashboard from './pages/AdminDashboard';
 import CustomerReorder from './pages/CustomerReorder';
 
 
 export const PAGES = {
-    "AdminDashboard": AdminDashboard,
     "CustomerDetail": CustomerDetail,
+    "AdminDashboard": AdminDashboard,
     "CustomerReorder": CustomerReorder,
 }
 
