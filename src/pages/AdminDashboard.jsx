@@ -243,24 +243,9 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-white p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex flex-col gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69934b2bd076a1f3a472ce61/f4868db7a_Untitleddesign12.png" 
-              alt="Orama Business Solutions"
-              className="h-14 w-auto object-contain"
-            />
-            <p className="text-gray-900 text-base font-bold">Customer Reorders Portal</p>
-          </div>
-          <div className="flex flex-col items-end gap-3">
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              className="gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
+        <PageHeader
+          onSignOut={handleSignOut}
+          actions={
             <Dialog open={open} onOpenChange={(isOpen) => {
               setOpen(isOpen);
               if (!isOpen) {
