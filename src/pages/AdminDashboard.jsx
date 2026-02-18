@@ -75,6 +75,8 @@ export default function AdminDashboard() {
     },
     retry: 2,
     retryDelay: 1000,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const resetForm = useCallback(() => {
