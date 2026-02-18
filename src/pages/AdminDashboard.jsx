@@ -174,6 +174,11 @@ export default function AdminDashboard() {
       
       if (response.data.success) {
         toast.success("QuickBooks customer created!");
+        const created = response.data.customer;
+        // Auto-populate customer form fields from QB data
+        if (!customerName) setCustomerName(created.name || "");
+        if (!companyName && created.company) setCompanyName(created.company);
+        if (!email && created.email) setEmail(created.email);
         setNewQBCustomer({
           displayName: "",
           companyName: "",
@@ -183,7 +188,7 @@ export default function AdminDashboard() {
           phone: ""
         });
         await refetchQB();
-        setSelectedQBCustomer(response.data.customer.id);
+        setSelectedQBCustomer(created.id);
         setCreateQBOpen(false);
       } else {
         toast.error(response.data.error || "Failed to create customer");
