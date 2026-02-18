@@ -107,8 +107,8 @@ export default function CustomerReorder() {
 
 
   if (!token) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+   return (
+     <div className="min-h-screen flex items-center justify-center">
         <p className="text-slate-600">Invalid access link</p>
       </div>
     );
@@ -116,14 +116,14 @@ export default function CustomerReorder() {
 
   if (!customer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-slate-600">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen">
       <div className="bg-white border-b border-slate-200 shadow-sm">
         <div className="h-1 bg-gradient-to-r from-[#EF4444] to-[#f97316]" />
         <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">

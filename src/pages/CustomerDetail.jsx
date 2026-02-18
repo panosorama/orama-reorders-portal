@@ -214,7 +214,7 @@ export default function CustomerDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <PageHeader
         backTo="AdminDashboard"
         backLabel="Dashboard"
