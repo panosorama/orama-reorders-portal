@@ -262,57 +262,7 @@ export default function AdminDashboard() {
             <DialogTitle>{editingCustomer ? "Edit Customer" : "Create New Customer"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={editingCustomer ? handleEditCustomer : handleCreateCustomer} className="space-y-4">
-            <div>
-              <Label htmlFor="customerName">Display Name *</Label>
-              <Input
-                id="customerName"
-                value={form.customerName}
-                onChange={(e) => setField("customerName")(e.target.value)}
-                required
-                placeholder="John Doe"
-              />
-            </div>
-            <div>
-              <Label htmlFor="companyName">Company Name</Label>
-              <Input
-                id="companyName"
-                value={form.companyName}
-                onChange={(e) => setField("companyName")(e.target.value)}
-                placeholder="ABC Corporation"
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setField("email")(e.target.value)}
-                placeholder="customer@example.com"
-              />
-            </div>
-            <div>
-              <Label htmlFor="shipToAddress">Shipping Address</Label>
-              <Input
-                id="shipToAddress"
-                value={form.shipToAddress}
-                onChange={(e) => setField("shipToAddress")(e.target.value)}
-                placeholder="Enter default shipping address for blind ship orders"
-              />
-              <p className="text-xs text-slate-500 mt-1">Used as default for blind ship orders</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="taxExempt"
-                checked={form.isTaxExempt}
-                onChange={(e) => setField("isTaxExempt")(e.target.checked)}
-                className="w-4 h-4 rounded"
-              />
-              <Label htmlFor="taxExempt" className="cursor-pointer">Tax Exempt</Label>
-            </div>
-
-            {/* QB Customer Selector */}
+            {/* QB Customer Selector - FIRST */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-red-600">QuickBooks Customer * (Required)</Label>
