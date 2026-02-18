@@ -520,6 +520,12 @@ export default function AdminDashboard() {
                      Manage Reorders
                    </Button>
                  </Link>
+                 <a href={createPageUrl(`CustomerReorder?token=${customer.unique_token}`)} target="_blank" rel="noreferrer" className="block">
+                   <Button variant="outline" className="w-full h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50">
+                     <ExternalLink className="w-3 h-3 mr-1" />
+                     Preview Portal
+                   </Button>
+                 </a>
                  <Button
                    variant="secondary"
                    className="w-full h-8 text-xs"

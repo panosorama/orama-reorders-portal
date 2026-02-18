@@ -14,6 +14,7 @@ export default function CustomerReorder() {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [editableShipAddress, setEditableShipAddress] = useState("");
 
   const { data: customer } = useQuery({
     queryKey: ['customer-by-token', token],
