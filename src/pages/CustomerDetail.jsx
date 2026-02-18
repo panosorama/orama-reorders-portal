@@ -70,12 +70,6 @@ export default function CustomerDetail() {
 
   const handleAddOrder = async (e) => {
     e.preventDefault();
-    
-    if (!selectedQbCustomer) {
-      toast.error("Please select a QuickBooks customer");
-      return;
-    }
-    
     setUploading(true);
 
     try {
@@ -94,8 +88,8 @@ export default function CustomerDetail() {
         shipping_charge: shippingCharge ? parseFloat(shippingCharge) : 0,
         mockup_url: mockupUrl,
         status: editingOrder?.status || "available",
-        quickbooks_customer_id: selectedQbCustomer.id,
-        quickbooks_customer_name: selectedQbCustomer.name,
+        quickbooks_customer_id: customer?.quickbooks_customer_id,
+        quickbooks_customer_name: customer?.quickbooks_customer_name,
         shipping_method: shippingMethod,
         ship_to_address: shippingMethod === "blind_ship" ? (customShipAddress || customer?.ship_to_address || "") : null
       };
