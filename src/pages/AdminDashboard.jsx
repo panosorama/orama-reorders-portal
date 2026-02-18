@@ -154,9 +154,9 @@ export default function AdminDashboard() {
       setForm((prev) => ({
         ...prev,
         selectedQBCustomer: created.id,
-        customerName: prev.customerName || created.name || newQBCustomer.displayName || "",
-        companyName: prev.companyName || created.company || newQBCustomer.companyName || "",
-        email: prev.email || created.email || newQBCustomer.email || "",
+        customerName: created.name || newQBCustomer.displayName || prev.customerName || "",
+        companyName: created.company || newQBCustomer.companyName || prev.companyName || "",
+        email: created.email || newQBCustomer.email || prev.email || "",
       }));
     } else {
       toast.error(response.data.error || "Failed to create customer");
