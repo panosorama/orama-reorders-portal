@@ -257,12 +257,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-50">
       <PageHeader
         onSignOut={handleSignOut}
-        actions={
-          <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={() => setOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Customer
-          </Button>
-        }
+        actions={null}
       />
 
       <Dialog open={open} onOpenChange={dialogOnOpenChange}>
