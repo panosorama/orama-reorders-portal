@@ -464,13 +464,13 @@ export default function AdminDashboard() {
         </div>
 
         <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <Input
-              placeholder="Search customers by name, company, or email..."
+              placeholder="Search customers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9 h-9 bg-white border-slate-200 rounded-full text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-red-400"
             />
           </div>
         </div>
