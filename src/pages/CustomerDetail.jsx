@@ -389,22 +389,22 @@ export default function CustomerDetail() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {orders.map((order) => (
-            <Card key={order.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">{order.product_type}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+           {orders.map((order) => (
+             <Card key={order.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
+               <CardHeader>
+                 <CardTitle className="text-lg">{order.product_type}</CardTitle>
+               </CardHeader>
+               <CardContent className="space-y-3 flex-1 flex flex-col">
                 {order.mockup_url && (
-                   <div className="flex items-center justify-center bg-gray-50 rounded-lg h-48">
-                     <img
-                       src={order.mockup_url}
-                       alt={order.product_type}
-                       className="max-w-full max-h-full object-contain"
-                     />
-                   </div>
-                 )}
+                  <div className="flex items-center justify-center bg-gray-50 rounded-lg h-64">
+                    <img
+                      src={order.mockup_url}
+                      alt={order.product_type}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                )}
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <p className="text-sm text-slate-700 whitespace-pre-line">{order.specifications}</p>
                 </div>
@@ -429,35 +429,35 @@ export default function CustomerDetail() {
                     )}
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleEditOrder(order)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleToggleVisibility(order)}
-                  >
-                    {order.visible ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                    {order.visible ? 'Hide' : 'Show'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleDeleteOrder(order.id)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
+                <div className="flex gap-2 mt-auto pt-4">
+                   <Button
+                     size="sm"
+                     variant="outline"
+                     className="flex-1"
+                     onClick={() => handleEditOrder(order)}
+                   >
+                     <Edit className="w-4 h-4 mr-1" />
+                     Edit
+                   </Button>
+                   <Button
+                     size="sm"
+                     variant="outline"
+                     className="flex-1"
+                     onClick={() => handleToggleVisibility(order)}
+                   >
+                     {order.visible ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+                     {order.visible ? 'Hide' : 'Show'}
+                   </Button>
+                   <Button
+                     size="sm"
+                     variant="outline"
+                     className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                     onClick={() => handleDeleteOrder(order.id)}
+                   >
+                     <Trash2 className="w-4 h-4 mr-1" />
+                     Delete
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))}
