@@ -370,6 +370,15 @@ export default function CustomerDetail() {
               </form>
             </DialogContent>
           </Dialog>
+        }
+      />
+
+      <div className="max-w-6xl mx-auto px-8 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">{customer.customer_name}</h1>
+          {customer.company_name && (
+            <p className="text-base text-gray-500 mt-1">{customer.company_name}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
