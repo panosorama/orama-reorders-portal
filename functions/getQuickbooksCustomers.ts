@@ -56,11 +56,21 @@ Deno.serve(async (req) => {
     const customers = customerData.QueryResponse?.Customer || [];
     
     // Return simplified customer list
-    const customerList = customers.map(c => ({
-      id: c.Id,
-      name: c.DisplayName,
-      company: c.CompanyName || null
-    }));
+    const customerList = customers.map(c => {
+      const addr = c.ShipAddr;
+      let shipToAddress = null;
+      if (addr) {
+        const parts = [addr.Line1, addr.City, addr.CountrySubDivisionCode, addr.PostalCode].filter(Boolean);
+        shipToAddress = parts.join(", ");
+      }
+      return {
+        id: c.Id,
+        name: c.DisplayName,
+        company: c.CompanyName || null,
+        email: c.PrimaryEmailAddr?.Address || null,
+        shipToAddress: shipToAddress || null
+      };
+    });
 
     return Response.json({
       success: true,
