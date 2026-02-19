@@ -370,7 +370,7 @@ export default function AdminDashboard() {
                           {qbCustomers.map((qbCustomer) => (
                             <CommandItem
                               key={qbCustomer.id}
-                              value={qbCustomer.name}
+                              value={`${qbCustomer.name} ${qbCustomer.company || ""} ${qbCustomer.id}`}
                               onSelect={() => handleSelectQBCustomer(qbCustomer)}
                             >
                               <Check
