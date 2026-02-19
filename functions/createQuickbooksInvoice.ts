@@ -136,7 +136,6 @@ Deno.serve(async (req) => {
     const finalLink = linkData.Invoice?.InvoiceLink;
 
     // 6. BACKGROUND DATABASE UPDATE (Non-blocking)
-    const base44 = createClientFromRequest(req);
     if (base44) {
       base44.asServiceRole.entities.Order.update(order_id, { 
         quickbooks_invoice_id: newInvoiceId 
