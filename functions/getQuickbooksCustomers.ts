@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
     // Fetch all active customers
     const customerResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=select * from Customer where Active = true MAXRESULTS 1000&minorversion=65`,
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=select%20*%20from%20Customer%20where%20Active%20%3D%20true%20MAXRESULTS%201000&minorversion=65`,
       {
         method: 'GET',
         headers: {
