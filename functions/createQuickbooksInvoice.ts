@@ -53,19 +53,10 @@ Deno.serve(async (req) => {
       pricing, quantity, shipping_charge, is_tax_exempt, ship_to_address 
     } = body;
 
-    const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
-    const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
-    const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
-    const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
+    const base44 = createClientFromRequest(req);
 
-    // 1. QUICK AUTH
-    const authHeader = btoa(`${clientId}:${clientSecret}`);
-    const tokenRes = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${authHeader}` },
-      body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: refreshToken })
-    });
-    const { access_token } = await tokenRes.json();
+    // 1. QUICK AUTH (auto-rotating token)
+    const { access_token, realm_id: realmId } = await getQBToken(base44);
     
     const baseUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}`;
     const apiHeaders = { 'Authorization': `Bearer ${access_token}`, 'Accept': 'application/json', 'Content-Type': 'application/json' };
