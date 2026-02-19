@@ -43,32 +43,7 @@ Deno.serve(async (req) => {
 
     const { displayName, companyName, givenName, familyName, email, phone, billAddr } = await req.json();
 
-    const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
-    const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
-    const refreshToken = Deno.env.get('QUICKBOOKS_REFRESH_TOKEN');
-    const realmId = Deno.env.get('QUICKBOOKS_REALM_ID');
-
-    // Get new access token
-    const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`)
-      },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken
-      })
-    });
-
-    const tokenData = await tokenResponse.json();
-    
-    if (!tokenResponse.ok) {
-      throw new Error(tokenData.error_description || 'Failed to get access token');
-    }
-    
-    const accessToken = tokenData.access_token;
+    const { access_token: accessToken, realm_id: realmId } = await getQBToken(base44);
 
     // Create customer in QuickBooks
     const customerData = {
