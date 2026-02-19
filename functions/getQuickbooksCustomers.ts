@@ -37,9 +37,9 @@ Deno.serve(async (req) => {
     const { access_token: accessToken, realm_id: realmId } = await getQBToken(base44);
     console.log('Got access token, fetching customers...');
 
-    // Fetch all active customers
+    // Fetch all active customers (including sub-customers/jobs)
     const customerResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=select%20*%20from%20Customer%20where%20Active%20%3D%20true%20MAXRESULTS%201000&minorversion=65`,
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=SELECT%20*%20FROM%20Customer%20MAXRESULTS%201000&minorversion=65`,
       {
         method: 'GET',
         headers: {
