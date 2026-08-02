@@ -1,0 +1,11 @@
+{
+  "name": "QuickbooksConfig",
+  "type": "object",
+  "properties": {
+    "refresh_token": {
+      "type": "string",
+      "description": "Current QuickBooks refresh token (auto-rotating)"
+    }
+  },
+  "required": []
+}

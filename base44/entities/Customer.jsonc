@@ -1,0 +1,44 @@
+{
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+    "customer_name": {
+      "type": "string",
+      "description": "Customer's full name"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "unique_token": {
+      "type": "string",
+      "description": "Unique URL token for customer access"
+    },
+    "quickbooks_customer_id": {
+      "type": "string",
+      "description": "QuickBooks customer ID"
+    },
+    "quickbooks_customer_name": {
+      "type": "string",
+      "description": "QuickBooks customer display name"
+    },
+    "ship_to_address": {
+      "type": "string",
+      "description": "Default shipping address for blind ship orders"
+    },
+    "is_tax_exempt": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether customer is tax exempt"
+    }
+  },
+  "required": [
+    "customer_name",
+    "unique_token",
+    "quickbooks_customer_id"
+  ]
+}

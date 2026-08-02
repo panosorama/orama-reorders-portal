@@ -1,0 +1,88 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "Reference to Customer entity"
+    },
+    "quickbooks_customer_id": {
+      "type": "string",
+      "description": "QuickBooks customer ID"
+    },
+    "quickbooks_customer_name": {
+      "type": "string",
+      "description": "QuickBooks customer display name"
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Type of product (business cards, brochures, envelopes, menus, etc.)"
+    },
+    "specifications": {
+      "type": "string",
+      "description": "Full job specifications and details"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Quantity of items ordered"
+    },
+    "pricing": {
+      "type": "number",
+      "description": "Price for this order"
+    },
+    "shipping_charge": {
+      "type": "number",
+      "default": 0,
+      "description": "Shipping charge for this order"
+    },
+    "mockup_url": {
+      "type": "string",
+      "description": "URL to the design mockup image"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "pending_approval",
+        "approved",
+        "declined",
+        "completed"
+      ],
+      "default": "available",
+      "description": "Order status"
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this product is shown to customers in the portal"
+    },
+    "quickbooks_invoice_id": {
+      "type": "string",
+      "description": "QuickBooks invoice ID after creation"
+    },
+    "monday_item_id": {
+      "type": "string",
+      "description": "Monday.com item ID after creation"
+    },
+    "shipping_method": {
+      "type": "string",
+      "enum": [
+        "office_pickup",
+        "blind_ship"
+      ],
+      "default": "blind_ship",
+      "description": "Whether order is picked up at office or blind shipped"
+    },
+    "ship_to_address": {
+      "type": "string",
+      "description": "Custom shipping address for blind ship orders"
+    }
+  },
+  "required": [
+    "customer_id",
+    "product_type",
+    "specifications",
+    "pricing",
+    "quickbooks_customer_id"
+  ]
+}
